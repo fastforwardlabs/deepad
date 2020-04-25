@@ -1,7 +1,7 @@
 #
 # @license
 # Copyright 2020 Cloudera Fast Forward. https://github.com/fastforwardlabs
-# DeepAd: Experiments detecting Anomalies with Deep Neural Networks.
+# DeepAd: Experiments detecting Anomalies with Deep Neural Networks https://ff12.fastforwardlabs.com/.
 # Licensed under the MIT License (the "License");
 # =============================================================================
 #
