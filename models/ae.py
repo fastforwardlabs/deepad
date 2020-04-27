@@ -80,8 +80,8 @@ class Autoencoder():
 
         self.encoder = Model(inputs, z_, name='encoder')
         logging.debug(self.encoder.summary())
-        plot_model(self.encoder, to_file='ae_mlp_encoder.png',
-                   show_shapes=True)
+        # plot_model(self.encoder, to_file='ae_mlp_encoder.png',
+        #            show_shapes=True)
 
         # decoder
         latent_inputs = Input(shape=(latent_dim,), name='z_')
@@ -100,8 +100,8 @@ class Autoencoder():
         # instantiate decoder model
         self.decoder = Model(latent_inputs, outputs, name='decoder')
         logging.debug(self.decoder.summary())
-        plot_model(self.decoder, to_file='ae_mlp_decoder.png',
-                   show_shapes=True)
+        # plot_model(self.decoder, to_file='ae_mlp_decoder.png',
+        #            show_shapes=True)
 
         # instantiate AE model
         outputs = self.decoder(self.encoder(inputs))

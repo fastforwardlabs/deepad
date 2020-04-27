@@ -154,16 +154,6 @@ def get_kdd_data(data_dir="data/kdd/", filename="data/kdd/train.csv", keep_cols=
     return kdd99
 
 
-def scale_and_expand(df):
-    # min max (0,1) scaling input to fit sigmoid function range predicted by model
-    df = df.drop(columns='target')
-    minmaxscaler = MinMaxScaler(feature_range=(0, 1))
-    df = minmaxscaler.fit_transform(df)
-    df = np.expand_dims(df, axis=2)
-    df = np.expand_dims(df, axis=3)
-    return df
-
-
 def subset_kdd_data(dataset_path, dataset_type, keep_cols_arr, conf):
 
     mkdir(dataset_path + conf)

@@ -17,7 +17,9 @@ Anomalies, often referred to as outliers, abnormalities, rare events, or deviant
     -- gan.py
 
 
-Currently, the rop
+To train the currently implemented model, run
+
+`python3 train.py`
 
 ## Generating Benchmark Results
 ### KDD99 Dataset

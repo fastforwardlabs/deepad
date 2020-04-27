@@ -35,7 +35,6 @@ in_train, out_train = data_utils.load_kdd(
 in_test, out_test = data_utils.load_kdd(
     data_path="data/kdd/", dataset_type="test", partition="all")
 
-print(in_train.shape)
 ae = Autoencoder(in_train.shape[1])
 ae.train(in_train, in_test)
 
