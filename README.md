@@ -26,6 +26,8 @@ To train the currently implemented models, run
 
 `python3 train.py`
 
+This checks for 
+
 ## Generating Benchmark Results
 
 TODO: MLFlow instrumentation to track global metrics
@@ -33,3 +35,8 @@ TODO: MLFlow instrumentation to track global metrics
 ### Running on Cloudera Machine Learning
 
 TODO: Map application abstraction for easy deployment on Cloudera Machine Learning.
+
+## TODO
+- Export models from each run for use in CML application
+- CML model/application to host and interact with model endpoint  
+- Stretch: Include image dataset.
