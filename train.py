@@ -6,10 +6,17 @@
 # =============================================================================
 #
 
-
-import argparse
-import mlflow
 from mlflow import log_metric, log_param, log_artifact
+import mlflow
+import argparse
+import logging
+
+from models.ae import Autoencoder
+from utils import data_utils
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 
 parser = argparse.ArgumentParser(description='Process train parameters')
 parser.add_argument('--model', dest='model', type=str,
@@ -19,5 +26,17 @@ parser.add_argument('--model', dest='model', type=str,
 #                     const=sum, default=max,
 #                     help='sum the integers (default: find the max)')
 
+
 args = parser.parse_args()
-print(args)
+
+
+in_train, out_train = data_utils.load_kdd(
+    data_path="data/kdd/", dataset_type="train", partition="all")
+in_test, out_test = data_utils.load_kdd(
+    data_path="data/kdd/", dataset_type="test", partition="all")
+
+print(in_train.shape)
+ae = Autoencoder(in_train.shape[1])
+ae.train(in_train, in_test)
+
+# print(args)

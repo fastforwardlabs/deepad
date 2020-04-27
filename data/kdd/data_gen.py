@@ -6,7 +6,7 @@
 # =============================================================================
 #
 
-"""[Download KDD Dataset, clean and parse into train/test sets]
+"""[Download KDD Dataset, clean and parse into train/val/test sets]
 
 Returns:
     [type] -- [description]
@@ -21,7 +21,7 @@ import urllib.request
 import gzip
 import os
 from sklearn.preprocessing import MinMaxScaler
-
+import numpy as np
 
 kdd_train_url = 'http://kdd.ics.uci.edu/databases/kddcup99/kddcup.data_10_percent.gz'
 kdd_test_url = 'http://kdd.ics.uci.edu/databases/kddcup99/corrected.gz'
@@ -67,7 +67,7 @@ keep_cols_no_corr = ['srv_count'
                      'dst_host_rerror_rate', 'target']
 
 
-def get_kdd_data(filename='kddcup.data_10_percent', keep_cols=keep_cols_orig):
+def get_kdd_data(data_dir="data/kdd/", filename="data/kdd/train.csv", keep_cols=keep_cols_orig):
 
     data_columns = ['duration', 'protocol_type', 'service', 'flag', 'src_bytes',
                     'dst_bytes', 'land', 'wrong_fragment', 'urgent', 'hot',
@@ -82,7 +82,7 @@ def get_kdd_data(filename='kddcup.data_10_percent', keep_cols=keep_cols_orig):
                     'dst_host_srv_diff_host_rate', 'dst_host_serror_rate',
                     'dst_host_srv_serror_rate', 'dst_host_rerror_rate',
                     'dst_host_srv_rerror_rate', 'labels']
-    kdd99 = pd.read_csv(os.path.join(data_dir, filename),
+    kdd99 = pd.read_csv(filename,
                         header=None, names=data_columns)
     dtypes = {
         'duration': 'int',
@@ -134,7 +134,7 @@ def get_kdd_data(filename='kddcup.data_10_percent', keep_cols=keep_cols_orig):
 
     kdd99['labels'] = kdd99['labels'].map(lambda x: str(x)[:-1])
 
-    attack_types = pd.read_csv(os.path.join(data_dir, 'training_attack_types'), sep="\s+", header=None,
+    attack_types = pd.read_csv(os.path.join(data_dir, 'training_attack_types.txt'), sep="\s+", header=None,
                                names=['labels', 'attack'], dtype={'labels': str, 'attack': str})
 
     kdd99 = pd.merge(kdd99, attack_types, on=['labels'], how='left')
@@ -166,10 +166,13 @@ def scale_and_expand(df):
 
 def subset_kdd_data(dataset_path, dataset_type, keep_cols_arr, conf):
 
+    mkdir(dataset_path + conf)
     if (dataset_type == "train"):
-        kdddata = get_kdd_data(keep_cols=keep_cols_arr)
+        kdddata = get_kdd_data(filename=dataset_path +
+                               "train.csv", keep_cols=keep_cols_arr)
     else:
-        kdddata = get_kdd_data(filename="corrected", keep_cols=keep_cols_arr)
+        kdddata = get_kdd_data(filename=dataset_path +
+                               "test.csv", keep_cols=keep_cols_arr)
 
     # Shuffle data
     kdddata = kdddata.sample(frac=1, random_state=200)
@@ -228,16 +231,19 @@ def save_json_file(json_file_path, json_data):
         json.dump(json_data, f)
 
 
-mkdir("data/kdd")
-download_gzip(kdd_train_url, "data/kdd/train.csv")
-download_gzip(kdd_test_url, "data/kdd/test.csv")
-download_file(attack_types_url, "data/kdd/attack_types.txt")
+def generate_dataset():
 
-# configs = ["all", "1080", "1090"]
+    mkdir("data/kdd")
+    download_gzip(kdd_train_url, "data/kdd/train.csv")
+    download_gzip(kdd_test_url, "data/kdd/test.csv")
+    download_file(attack_types_url, "data/kdd/training_attack_types.txt")
 
-# for conf in configs:
-#     in_train, out_train = subset_kdd_data(
-#         "kdd/", "train", keep_cols_orig, conf)
-#     in_test, out_test = subset_kdd_data("kdd/", "test", keep_cols_orig, conf)
+    configs = ["all", "1080", "1090"]
 
-# #   print("Train", conf, in_train.shape, out_train.shape, "Test", in_test.shape, out_test.shape )
+    for conf in configs:
+        in_train, out_train = subset_kdd_data(
+            "data/kdd/", "train", keep_cols_orig, conf)
+        in_test, out_test = subset_kdd_data(
+            "data/kdd/", "test", keep_cols_orig, conf)
+
+#   print("Train", conf, in_train.shape, out_train.shape, "Test", in_test.shape, out_test.shape )

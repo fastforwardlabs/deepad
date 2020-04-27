@@ -7,7 +7,17 @@ Anomalies, often referred to as outliers, abnormalities, rare events, or deviant
 
 ## Structure of Repo
 
+-- train.py
+-- data
+    - kdd
+-- models
+    -- ae.py
+    -- vae.py
+    -- seq2seq.py
+    -- gan.py
 
+
+Currently, the rop
 
 ## Generating Benchmark Results
 ### KDD99 Dataset
