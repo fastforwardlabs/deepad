@@ -30,12 +30,14 @@ parser.add_argument('--model', dest='model', type=str,
 args = parser.parse_args()
 
 
-in_train, out_train = data_utils.load_kdd(
-    data_path="data/kdd/", dataset_type="train", partition="all")
-in_test, out_test = data_utils.load_kdd(
-    data_path="data/kdd/", dataset_type="test", partition="all")
+data_partition = "all"
+in_train, out_train, scaler = data_utils.load_kdd(
+    data_path="data/kdd/", dataset_type="train", partition=data_partition)
+in_test, out_test, _ = data_utils.load_kdd(
+    data_path="data/kdd/", dataset_type="test", partition=data_partition, scaler=scaler)
 
-ae = Autoencoder(in_train.shape[1])
-ae.train(in_train, in_test)
+# Instantiate and Train Autoencoder
+# ae = Autoencoder(in_train.shape[1])
+# ae.train(in_train, in_test)
 
 # print(args)

@@ -7,11 +7,12 @@
 # =============================================================================
 #
 
-from data.kdd import data_gen
+from data.kdd import data_gen as kdd
 import pandas as pd
 import os
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+import logging
 
 
 def scale_data(df, scaler=None, drop_col="target", dim_size=2):
@@ -28,20 +29,21 @@ def scale_data(df, scaler=None, drop_col="target", dim_size=2):
     return df, scaler
 
 
-def load_kdd(data_path="data/kdd", dataset_type="all", partition="all"):
+def load_kdd(data_path="data/kdd", dataset_type="all", partition="all", scaler=None):
 
     inlier_data_path = os.path.join(
         data_path, partition, dataset_type + "_inliers.csv")
-    inlier_data_path = os.path.join(
+    outlier_data_path = os.path.join(
         data_path, partition, dataset_type + "_outliers.csv")
 
     if not os.path.exists(os.path.join(inlier_data_path)):
-        data_gen.generate_dataset()
-    inliers = pd.read_csv(os.path.join(
-        data_path, partition, dataset_type + "_inliers.csv"))
-    outliers = pd.read_csv(os.path.join(
-        data_path, partition, dataset_type + "_outliers.csv"))
+        logging.debug(" >> Generating KDD dataset")
+        kdd.generate_dataset()
 
-    inliers, scaler = scale_data(inliers, dim_size=2)
-    outliers, _ = scale_data(outliers, scaler, dim_size=2)
-    return inliers, outliers
+    inliers = pd.read_csv(inlier_data_path)
+    outliers = pd.read_csv(outlier_data_path)
+
+    logging.debug(" >> KDD dataset loaded")
+    inliers, scaler = scale_data(inliers, scaler=scaler, dim_size=2)
+    outliers, _ = scale_data(outliers, scaler=scaler, dim_size=2)
+    return inliers, outliers, scaler
