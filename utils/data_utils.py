@@ -17,12 +17,11 @@ import logging
 
 def scale_data(df, scaler=None, drop_col="target", dim_size=2):
     df = df.drop(columns=drop_col)
-    print(">> ", df.shape)
     if (not scaler):
         scaler = MinMaxScaler(feature_range=(0, 1))
         df = scaler.fit_transform(df)
     else:
-        df = scaler.transform
+        df = scaler.transform(df)
 
     # df = np.expand_dims(df, axis=dim_size)
     # df = np.expand_dims(df, axis=3)

@@ -33,7 +33,7 @@ random.seed(2018)
 class Autoencoder():
 
     def __init__(self, n_features, hidden_layers=2, latent_dim=2, hidden_dim=[15, 7],
-                 output_activation='sigmoid', learning_rate=0.01):
+                 output_activation='sigmoid', learning_rate=0.01, epochs=15, batch_size=128):
         """ Build AE model.
         Arguments:
             - n_features (int): number of features in the data
@@ -43,6 +43,9 @@ class Autoencoder():
             - output_activation (str): activation type for last dense layer in the decoder
             - learning_rate (float): learning rate used during training
         """
+
+        self.epochs = epochs
+        self.batch_size = batch_size
 
         self.model(n_features, hidden_layers=hidden_layers, latent_dim=latent_dim,
                    hidden_dim=hidden_dim, output_activation=output_activation, learning_rate=learning_rate)
@@ -115,22 +118,7 @@ class Autoencoder():
     def train(self, in_train, in_val):
         # default args
 
-        # architecture
-        HIDDEN_LAYERS = 2
-        LATENT_DIM = 2
-        HIDDEN_DIM = [15, 7]
-        OUTPUT_ACTIVATION = 'sigmoid'
-
         # training
-        EPOCHS = 14
-        BATCH_SIZE = 256
-        LEARNING_RATE = .01
-        SAVE = True
-        PRINT_PROGRESS = True
-        CONTINUE_TRAINING = False
-
-        # predicting
-        THRESHOLD = 10.0
 
         X_train, X_val = in_train, in_val
         n_features = X_train.shape[1]  # nb of features
@@ -138,13 +126,12 @@ class Autoencoder():
         logging.debug("Training with data of shape", X_train.shape)
 
         kwargs = {}
-        kwargs['epochs'] = EPOCHS
-        kwargs['batch_size'] = BATCH_SIZE
+        kwargs['epochs'] = self.epochs
+        kwargs['batch_size'] = self.batch_size
         kwargs['shuffle'] = True
         kwargs['validation_data'] = (X_val, X_val)
         kwargs['verbose'] = 1
         kwargs['callbacks'] = [train_utils.TimeHistory()]
-        # kwargs['validation_freq']=2
 
         history = self.ae.fit(X_train, X_train, **kwargs)
         # Plot training & validation loss values
@@ -154,4 +141,9 @@ class Autoencoder():
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
-        plt.show()
+        # plt.show()
+
+    def compute_anomaly_score(self, df):
+        preds = self.ae.predict(df)
+        mse = np.mean(np.power(df - preds, 2), axis=1)
+        return mse

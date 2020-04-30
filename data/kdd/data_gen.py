@@ -37,6 +37,7 @@ def download_gzip(url, dest_path):
     f_out.write(file_content)
     f.close()
     f_out.close()
+    logging.debug(" >> KDD Dataset download completed.")
 
 
 def mkdir(directory):
@@ -185,10 +186,10 @@ def subset_kdd_data(dataset_path, dataset_type, keep_cols_arr, conf):
         logging.info("saving validation data")
 
         # if test, set max inliers
-        if (conf == "1080"):
+        if (conf == "8020"):
             max_normal_samples = 8000
             max_abnormal_samples = 2000
-        elif (conf == "1090"):
+        elif (conf == "9010"):
             max_normal_samples = 9000
             max_abnormal_samples = 1000
         elif (conf == "5050"):
@@ -207,7 +208,7 @@ def subset_kdd_data(dataset_path, dataset_type, keep_cols_arr, conf):
                     dataset_type + "_outliers.csv", index=False)
     logging.info(">> saving ", dataset_type, " data")
 
-    return scale_and_expand(inliers), scale_and_expand(outliers)
+    return (inliers), (outliers)
 
 
 def load_json_file(json_file_path):
@@ -230,7 +231,7 @@ def generate_dataset():
     download_gzip(kdd_test_url, "data/kdd/test.csv")
     download_file(attack_types_url, "data/kdd/training_attack_types.txt")
 
-    configs = ["all", "1080", "1090"]
+    configs = ["all", "8020", "9010"]
 
     for conf in configs:
         in_train, out_train = subset_kdd_data(

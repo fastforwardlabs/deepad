@@ -9,13 +9,11 @@
 from mlflow import log_metric, log_param, log_artifact
 import mlflow
 import argparse
-import logging
-
 from models.ae import Autoencoder
 from utils import data_utils
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 
 parser = argparse.ArgumentParser(description='Process train parameters')
@@ -30,14 +28,20 @@ parser.add_argument('--model', dest='model', type=str,
 args = parser.parse_args()
 
 
-data_partition = "all"
+test_data_partition = "8020"
 in_train, out_train, scaler = data_utils.load_kdd(
-    data_path="data/kdd/", dataset_type="train", partition=data_partition)
+    data_path="data/kdd/", dataset_type="train", partition=test_data_partition)
 in_test, out_test, _ = data_utils.load_kdd(
-    data_path="data/kdd/", dataset_type="test", partition=data_partition, scaler=scaler)
+    data_path="data/kdd/", dataset_type="test", partition=test_data_partition, scaler=scaler)
 
 # Instantiate and Train Autoencoder
-# ae = Autoencoder(in_train.shape[1])
-# ae.train(in_train, in_test)
+ae_kwargs = {}
+ae_kwargs["latent_dim"] = 1
+ae_kwargs["hidden_dim"] = [15, 7]
+ae_kwargs["epochs"] = 2
+ae_kwargs["batch_size"] = 128
+ae = Autoencoder(in_train.shape[1], **ae_kwargs)
+ae.train(in_train, in_test)
 
-# print(args)
+inlier_scores = ae.compute_anomaly_score(in_test)
+outlier_scores = ae.compute_anomaly_score(out_test)
