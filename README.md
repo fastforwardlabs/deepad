@@ -17,6 +17,15 @@ We include implementations of several neural networks (Autoencoder, Variational 
 
 Anomalies, often referred to as outliers, abnormalities, rare events, or deviants, are data points or patterns in data that do not conform to a notion of normal behavior. Anomaly detection, then, is the task of finding those patterns in data that do not adhere to expected norms, given previous observations. The capability to recognize or detect anomalous behavior can provide highly useful insights across industries. Flagging unusual cases or enacting a planned response when they occur can save businesses time, costs, and customers. Hence, anomaly detection has found diverse applications in a variety of domains, including IT analytics, network intrusion analytics, medical diagnostics, financial fraud protection, manufacturing quality control, marketing and social media analytics, and more.
 
+## How Anomaly Detection Works
+
+The underlying strategy for most approaches to anomaly detection is to first model normal behavior, and then exploit this knowledge to identify deviations (anomalies). In this repo, we accomplish this across two steps
+
+- Build a model of normal behavior using available data. Typically the model is trained on normal behaviour data (or assumes a small amount of abnormal data).
+- Based on this model, assign an anomaly score  to each data point that represents a measure of deviation from normal behavior. The models in this repo use a _reconstruction_ error approach, where the model attempts to reconstruct a sample at test time, and uses the _reconstruction_ error as an anomaly score. The intuition is that normal samples will be reconstructed with almost no error, while abnormal/unusual samples can be reconstructed with larger error margins.
+- Apply a threshold on the anomaly score to determine which samples are anomalies.
+
+As an illustrative example, an autoencoder model is trained on normal samples where the _task_ is to reconstruct the input. At test time, we can use the reconstruction error (mean squared error) for each sample as anomaly scores. 
 
 ## Structure of Repo
 
@@ -59,7 +68,7 @@ For additional details on each model, see our [report](https://ff12.fastforwardl
 
  
 ## TODO
-
+- Finalize bigan and seq2seq train methods
 - Map to CML Abstractions
     - Export models from each run for use in CML application
     - CML model/application to host and interact with model endpoint  

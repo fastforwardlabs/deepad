@@ -27,7 +27,7 @@ plot_params = {'legend.fontsize': 'large',
 plt.rcParams.update(plot_params)
 
 
-def plot_anomaly_histogram(inlier_score, outlier_score, title="Anomaly Histogram", threshold=0.5, model_name="_"):
+def plot_anomaly_histogram(inlier_score, outlier_score, title="Anomaly Score Histogram", threshold=0.5, model_name="_"):
     plt.figure()
     ndf = pd.DataFrame(data=inlier_score, columns=["score"])
     adf = pd.DataFrame(data=outlier_score, columns=["score"])

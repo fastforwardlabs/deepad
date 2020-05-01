@@ -98,8 +98,6 @@ class VAEModel():
         # instantiate encoder model
         encoder = Model(inputs, [z_mean, z_log_var, z], name='encoder')
         logging.debug(encoder.summary())
-        plot_model(encoder, to_file='vae_mlp_encoder.png',
-                   show_shapes=True)
 
         # decoder
         latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
