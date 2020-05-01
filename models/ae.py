@@ -33,7 +33,7 @@ random.seed(2018)
 class Autoencoder():
 
     def __init__(self, n_features, hidden_layers=2, latent_dim=2, hidden_dim=[15, 7],
-                 output_activation='sigmoid', learning_rate=0.01, epochs=15, batch_size=128):
+                 output_activation='sigmoid', learning_rate=0.01, epochs=15, batch_size=128, model_path=None):
         """ Build AE model.
         Arguments:
             - n_features (int): number of features in the data
@@ -47,11 +47,14 @@ class Autoencoder():
         self.epochs = epochs
         self.batch_size = batch_size
 
-        self.model(n_features, hidden_layers=hidden_layers, latent_dim=latent_dim,
-                   hidden_dim=hidden_dim, output_activation=output_activation, learning_rate=learning_rate)
+        if model_path:
+            self.model = tensorflow.keras.load_model(model_path)
 
-    def model(self, n_features, hidden_layers=1, latent_dim=2, hidden_dim=[],
-              output_activation='sigmoid', learning_rate=0.001):
+        self.create_model(n_features, hidden_layers=hidden_layers, latent_dim=latent_dim,
+                          hidden_dim=hidden_dim, output_activation=output_activation, learning_rate=learning_rate)
+
+    def create_model(self, n_features, hidden_layers=1, latent_dim=2, hidden_dim=[],
+                     output_activation='sigmoid', learning_rate=0.001):
 
         # set dimensions hidden layers
         if hidden_dim == []:
@@ -108,10 +111,10 @@ class Autoencoder():
 
         # instantiate AE model
         outputs = self.decoder(self.encoder(inputs))
-        self.ae = Model(inputs, outputs, name='ae')
+        self.model = Model(inputs, outputs, name='ae')
 
         optimizer = Adam(lr=learning_rate)
-        self.ae.compile(optimizer=optimizer, loss="mse")
+        self.model.compile(optimizer=optimizer, loss="mse")
 
         # return encoder, decoder, ae
 
@@ -133,7 +136,7 @@ class Autoencoder():
         kwargs['verbose'] = 1
         kwargs['callbacks'] = [train_utils.TimeHistory()]
 
-        history = self.ae.fit(X_train, X_train, **kwargs)
+        history = self.model.fit(X_train, X_train, **kwargs)
         # Plot training & validation loss values
         plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
@@ -144,6 +147,9 @@ class Autoencoder():
         # plt.show()
 
     def compute_anomaly_score(self, df):
-        preds = self.ae.predict(df)
+        preds = self.model.predict(df)
         mse = np.mean(np.power(df - preds, 2), axis=1)
         return mse
+
+    def save_model(self, save_path):
+        model.save(save_path)
