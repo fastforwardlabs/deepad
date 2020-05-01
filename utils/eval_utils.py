@@ -13,6 +13,7 @@ from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, precisio
 import pandas as pd
 import matplotlib.pyplot as plt
 import logging
+import os
 
 fig_size = (9, 6)
 fig_font = 15
@@ -100,6 +101,10 @@ def get_scores_and_labels(outlier_score, inlier_score):
 
 
 def evaluate_model(inlier_score, outlier_score, model_name="_"):
+    image_directory = "images/" + model_name
+    if not os.path.exists(image_directory):
+        os.makedirs(image_directory)
+
     all_scores, all_labels = get_scores_and_labels(
         outlier_score, inlier_score)
     all_thresholds = list(set(all_scores))
@@ -123,7 +128,7 @@ def evaluate_model(inlier_score, outlier_score, model_name="_"):
 
     # show ROC for best accuracy model
     best_metrics = compute_accuracy(
-        dict(max_acc)["threshold"], all_scores, all_labels, "test data", show_roc=True)
+        dict(max_acc)["threshold"], all_scores, all_labels, "test data", model_name=model_name, show_roc=True)
 
     plot_anomaly_histogram(inlier_score, outlier_score,
                            threshold=best_metrics["threshold"], model_name=model_name)
