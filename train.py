@@ -10,7 +10,8 @@ from mlflow import log_metric, log_param, log_artifact
 import mlflow
 import argparse
 from models.ae import Autoencoder
-from utils import data_utils
+from utils import data_utils, eval_utils
+
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -35,13 +36,21 @@ in_test, out_test, _ = data_utils.load_kdd(
     data_path="data/kdd/", dataset_type="test", partition=test_data_partition, scaler=scaler)
 
 # Instantiate and Train Autoencoder
+ae_model_path = "models/savedmodels/ae/ae"
 ae_kwargs = {}
-ae_kwargs["latent_dim"] = 1
+ae_kwargs["latent_dim"] = 2
 ae_kwargs["hidden_dim"] = [15, 7]
-ae_kwargs["epochs"] = 2
+ae_kwargs["epochs"] = 14
 ae_kwargs["batch_size"] = 128
+ae_kwargs["model_path"] = ae_model_path
 ae = Autoencoder(in_train.shape[1], **ae_kwargs)
-ae.train(in_train, in_test)
+# ae.train(in_train, in_test)
+# ae.save_model(ae_model_path)
 
 inlier_scores = ae.compute_anomaly_score(in_test)
 outlier_scores = ae.compute_anomaly_score(out_test)
+print(inlier_scores)
+print(outlier_scores)
+metrics = eval_utils.evaluate_model(
+    inlier_scores, outlier_scores, model_name="ae")
+print(metrics)

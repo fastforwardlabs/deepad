@@ -47,14 +47,12 @@ class Autoencoder():
         self.epochs = epochs
         self.batch_size = batch_size
 
-        if model_path:
-            self.model = tensorflow.keras.load_model(model_path)
-
         self.create_model(n_features, hidden_layers=hidden_layers, latent_dim=latent_dim,
-                          hidden_dim=hidden_dim, output_activation=output_activation, learning_rate=learning_rate)
+                          hidden_dim=hidden_dim, output_activation=output_activation,
+                          learning_rate=learning_rate, model_path=model_path)
 
     def create_model(self, n_features, hidden_layers=1, latent_dim=2, hidden_dim=[],
-                     output_activation='sigmoid', learning_rate=0.001):
+                     output_activation='sigmoid', learning_rate=0.001, model_path=None):
 
         # set dimensions hidden layers
         if hidden_dim == []:
@@ -84,9 +82,9 @@ class Autoencoder():
 
         z_ = Dense(latent_dim, name='z_')(enc_hidden)
 
-        self.encoder = Model(inputs, z_, name='encoder')
-        logging.debug(self.encoder.summary())
-        # plot_model(self.encoder, to_file='ae_mlp_encoder.png',
+        encoder = Model(inputs, z_, name='encoder')
+        logging.debug(encoder.summary())
+        # plot_model(encoder, to_file='ae_mlp_encoder.png',
         #            show_shapes=True)
 
         # decoder
@@ -104,19 +102,21 @@ class Autoencoder():
         outputs = Dense(n_features, activation=output_activation,
                         name='decoder_output')(dec_hidden)
         # instantiate decoder model
-        self.decoder = Model(latent_inputs, outputs, name='decoder')
-        logging.debug(self.decoder.summary())
-        # plot_model(self.decoder, to_file='ae_mlp_decoder.png',
+        decoder = Model(latent_inputs, outputs, name='decoder')
+        logging.debug(decoder.summary())
+        # plot_model(decoder, to_file='ae_mlp_decoder.png',
         #            show_shapes=True)
 
         # instantiate AE model
-        outputs = self.decoder(self.encoder(inputs))
-        self.model = Model(inputs, outputs, name='ae')
+        outputs = decoder(encoder(inputs))
+        self.model = Model(inputs, outputs, name='ae', )
 
         optimizer = Adam(lr=learning_rate)
         self.model.compile(optimizer=optimizer, loss="mse")
 
-        # return encoder, decoder, ae
+        if model_path:
+            logging.debug(">> Loading saved model weights")
+            self.model.load_weights(model_path)
 
     def train(self, in_train, in_val):
         # default args
@@ -124,9 +124,7 @@ class Autoencoder():
         # training
 
         X_train, X_val = in_train, in_val
-        n_features = X_train.shape[1]  # nb of features
-
-        logging.debug("Training with data of shape", X_train.shape)
+        logging.debug("Training with data of shape " + str(X_train.shape))
 
         kwargs = {}
         kwargs['epochs'] = self.epochs
@@ -144,7 +142,7 @@ class Autoencoder():
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
-        # plt.show()
+        plt.show()
 
     def compute_anomaly_score(self, df):
         preds = self.model.predict(df)
@@ -152,4 +150,5 @@ class Autoencoder():
         return mse
 
     def save_model(self, save_path):
-        model.save(save_path)
+        logging.debug(">> Saving Autoencoder model to " + save_path)
+        self.model.save_weights(save_path)

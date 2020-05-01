@@ -26,30 +26,24 @@ plot_params = {'legend.fontsize': 'large',
 plt.rcParams.update(plot_params)
 
 
-def plot_anomaly_histogram(loss_normal, loss_anomalous, title="anomaly", epoch=2, threshold=0.5):
+def plot_anomaly_histogram(inlier_score, outlier_score, title="Anomaly Histogram", threshold=0.5, model_name="_"):
     plt.figure()
-    ndf = pd.DataFrame(data=loss_normal, columns=["score"])
-    adf = pd.DataFrame(data=loss_anomalous, columns=["score"])
+    ndf = pd.DataFrame(data=inlier_score, columns=["score"])
+    adf = pd.DataFrame(data=outlier_score, columns=["score"])
 
     plt.hist(ndf["score"])
     plt.hist(adf["score"])
     plt.legend(["Normal Data", "Anomalous Data"])
-    plt.title(title + " Epoch " + str(epoch) +
-              " | Threshold: " + str(threshold))
+    plt.title(title + " | Threshold: " + str(threshold))
     plt.axvline(threshold, color="r", linestyle="dashed")
-    plt.savefig("images/histogram/%d.png" % epoch)
+    plt.savefig("images/" + model_name + "/histogram.png")
 
     plt.rcParams.update(plot_params)
-    if(not is_training):
-        plt.show()
+    plt.show()
     plt.close()
 
-    # save anomaly scores
-    anomalyscore_holder.append({"epoch": epoch, "scores": {
-                               "inlier": list(loss_normal), "outlier": list(loss_anomalous)}})
 
-
-def compute_accuracy(threshold, loss, y, dataset_name, show_roc=False):
+def compute_accuracy(threshold, loss, y, dataset_name, show_roc=False, model_name="_"):
     y_pred = np.array([1 if e > threshold else 0 for e in loss]).astype(int)
     acc_tot = accuracy_score(y, y_pred)
     prec_tot = precision_score(y, y_pred)
@@ -74,6 +68,7 @@ def compute_accuracy(threshold, loss, y, dataset_name, show_roc=False):
         plt.legend(loc="lower right")
 
         plt.rcParams.update(plot_params)
+        plt.savefig("images/" + model_name + "/roc.png")
 
     metrics = {"acc": acc_tot,
                "precision": prec_tot,
@@ -94,7 +89,7 @@ def test_threshold(threshold, loss, y):
     return metrics
 
 
-def get_scores_and_labels(outlier_score, inlier_score, epoch=2):
+def get_scores_and_labels(outlier_score, inlier_score):
     zero_vec = np.zeros(len(inlier_score))
     one_vec = np.ones(len(outlier_score))
 
@@ -104,27 +99,9 @@ def get_scores_and_labels(outlier_score, inlier_score, epoch=2):
     return all_scores, all_labels
 
 
-def visualize_tested_metrics(metric_df, epoch):
-
-    axis_font = 20
-    labelpad = 20
-
-    ax = metric_df[['acc', 'threshold']].plot(
-        kind='line',  stacked=False, title=" Performance values at epoch  " + str(epoch), x="threshold", figsize=fig_size, legend=True)
-    ax.set_xlabel("Thresholds",   labelpad=labelpad)
-    ax.set_ylabel("Performance score",  labelpad=labelpad)
-
-    plt.rcParams.update(plot_params)
-
-    plt.savefig("images/accuracy/%d.png" % epoch)
-    if(not is_training):
-        plt.show()
-    plt.close()
-
-
-def plot_accuracy(outlier_score, inlier_score, epoch=2):
+def evaluate_model(inlier_score, outlier_score, model_name="_"):
     all_scores, all_labels = get_scores_and_labels(
-        outlier_score, inlier_score, epoch)
+        outlier_score, inlier_score)
     all_thresholds = list(set(all_scores))
     all_thresholds.sort()
 
@@ -142,13 +119,14 @@ def plot_accuracy(outlier_score, inlier_score, epoch=2):
     max_acc = metric_df.sort_values(
         by='acc', ascending=False, na_position='first').iloc[0]
     logging.debug("Best accuracy is .. " + str(dict(max_acc)))
-    visualize_tested_metrics(metric_df, epoch)
+    # visualize_tested_metrics(metric_df, epoch)
 
     # show ROC for best accuracy model
     best_metrics = compute_accuracy(
         dict(max_acc)["threshold"], all_scores, all_labels, "test data", show_roc=True)
-    # save maximum accuracy for this iteration
-    accuracyscore_holder.append({"epoch": epoch, "accuracy": dict(max_acc)})
+
+    plot_anomaly_histogram(inlier_score, outlier_score,
+                           threshold=best_metrics["threshold"], model_name=model_name)
 
     return best_metrics
 
