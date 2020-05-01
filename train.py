@@ -9,9 +9,10 @@
 from mlflow import log_metric, log_param, log_artifact
 import mlflow
 import argparse
-from models.ae import Autoencoder
+from models.ae import AutoencoderModel
 from models.pca import PCAModel
 from models.ocsvm import SVMModel
+from models.vae import VAEModel
 from utils import data_utils, eval_utils
 
 
@@ -47,7 +48,7 @@ def train_autoencoder():
     ae_kwargs["epochs"] = 14
     ae_kwargs["batch_size"] = 128
     # ae_kwargs["model_path"] = ae_model_path
-    ae = Autoencoder(in_train.shape[1], **ae_kwargs)
+    ae = AutoencoderModel(in_train.shape[1], **ae_kwargs)
     ae.train(in_train, in_test)
     ae.save_model(ae_model_path)
 
@@ -91,6 +92,35 @@ def train_svm():
     print(metrics)
 
 
-train_autoencoder()
-train_pca()
-train_svm()
+def train_vae():
+    # Instantiate and Train Autoencoder
+    vae_model_path = "models/savedmodels/vae/vae"
+    vae_kwargs = {}
+    vae_kwargs["latent_dim"] = 2
+    vae_kwargs["hidden_dim"] = [15, 7]
+    vae_kwargs["epochs"] = 8
+    vae_kwargs["batch_size"] = 128
+    # vae_kwargs["model_path"] = ae_model_path
+    vae = VAEModel(in_train.shape[1], **vae_kwargs)
+    vae.train(in_train, in_test)
+    # # vae.save_model(ae_model_path)
+
+    inlier_scores = vae.compute_anomaly_score(in_test)
+    outlier_scores = vae.compute_anomaly_score(out_test)
+    print(inlier_scores)
+    print(outlier_scores)
+    metrics = eval_utils.evaluate_model(
+        inlier_scores, outlier_scores, model_name="vae")
+    # print(metrics)
+
+
+# train_autoencoder()
+# train_pca()
+train_vae()
+
+
+def train_all():
+    train_autoencoder()
+    train_pca()
+    train_vae()
+    train_svm()

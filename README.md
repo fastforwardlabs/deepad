@@ -1,6 +1,15 @@
 ## Deep Learning for Anomaly Detection
 
-<img src="images/testresult.png" width="100%">
+<div>
+<img src="images/ae/histogram.png" width="33%">
+<img src="images/pca/histogram.png" width="33%">
+<img src="images/ocsvm/histogram.png" width="33%">
+</div>
+<div>
+<img src="images/vae/histogram.png" width="33%">
+<img src="images/pca/roc.png" width="33%">
+<img src="images/ocsvm/roc.png" width="33%">
+</div>
 
 > This repo contains code for experiments we have run at Cloudera Fast Forward for implementing deep learning for anomaly detection usecases. 
 
@@ -39,7 +48,7 @@ This checks for the available datasets (downloads them as needed), trains and ev
 <img src="images/ocsvm/roc.png" width="33%">
 </div>
 <div>
-<img src="images/ae/roc.png" width="33%">
+<img src="images/vae/roc.png" width="33%">
 <img src="images/pca/roc.png" width="33%">
 <img src="images/ocsvm/roc.png" width="33%">
 </div>

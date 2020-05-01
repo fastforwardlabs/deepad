@@ -30,7 +30,7 @@ np.random.RandomState(2018)
 random.seed(2018)
 
 
-class Autoencoder():
+class AutoencoderModel():
 
     def __init__(self, n_features, hidden_layers=2, latent_dim=2, hidden_dim=[15, 7],
                  output_activation='sigmoid', learning_rate=0.01, epochs=15, batch_size=128, model_path=None):
