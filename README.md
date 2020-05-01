@@ -57,14 +57,11 @@ For each model, we use labeled test data to first select a threshold that yields
 
 For additional details on each model, see our [report](https://ff12.fastforwardlabs.com/).
 
-
-### Running on Cloudera Machine Learning
-
-TODO: Map application abstraction for easy deployment on Cloudera Machine Learning.
+ 
 
 ## TODO
 
-- Map to CML
+- Map to CML Abstractions
     - Export models from each run for use in CML application
     - CML model/application to host and interact with model endpoint  
 - Stretch: Include image dataset.
