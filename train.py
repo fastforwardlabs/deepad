@@ -11,6 +11,7 @@ import mlflow
 import argparse
 from models.ae import Autoencoder
 from models.pca import PCAModel
+from models.ocsvm import SVMModel
 from utils import data_utils, eval_utils
 
 
@@ -45,10 +46,10 @@ def train_autoencoder():
     ae_kwargs["hidden_dim"] = [15, 7]
     ae_kwargs["epochs"] = 14
     ae_kwargs["batch_size"] = 128
-    ae_kwargs["model_path"] = ae_model_path
+    # ae_kwargs["model_path"] = ae_model_path
     ae = Autoencoder(in_train.shape[1], **ae_kwargs)
-    # ae.train(in_train, in_test)
-    # ae.save_model(ae_model_path)
+    ae.train(in_train, in_test)
+    ae.save_model(ae_model_path)
 
     inlier_scores = ae.compute_anomaly_score(in_test)
     outlier_scores = ae.compute_anomaly_score(out_test)
@@ -62,7 +63,34 @@ def train_autoencoder():
 def train_pca():
     num_features = 2
     pca = PCAModel()
-    pca.train(in_train, num_features=num_features)
+    pca.train(in_train, in_test, num_features=num_features)
+
+    inlier_scores = pca.compute_anomaly_score_unsupervised(in_test)
+    outlier_scores = pca.compute_anomaly_score_unsupervised(out_test)
+    print(inlier_scores)
+    print(outlier_scores)
+    metrics = eval_utils.evaluate_model(
+        inlier_scores, outlier_scores, model_name="pca")
+    print(metrics)
 
 
-train_pca
+def train_svm():
+    svm_kwargs = {}
+    svm_kwargs["kernel"] = "rbf"
+    svm_kwargs["gamma"] = 0.5
+    svm_kwargs["outlier_frac"] = 0.0001
+    svm = SVMModel(**svm_kwargs)
+    svm.train(in_train, in_train)
+
+    inlier_scores = svm.compute_anomaly_score(in_test)
+    outlier_scores = svm.compute_anomaly_score(out_test)
+    print(inlier_scores)
+    print(outlier_scores)
+    metrics = eval_utils.evaluate_model(
+        inlier_scores, outlier_scores, model_name="ocsvm")
+    print(metrics)
+
+
+train_autoencoder()
+train_pca()
+train_svm()

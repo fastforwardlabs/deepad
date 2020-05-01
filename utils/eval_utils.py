@@ -34,8 +34,9 @@ def plot_anomaly_histogram(inlier_score, outlier_score, title="Anomaly Histogram
 
     plt.hist(ndf["score"])
     plt.hist(adf["score"])
-    plt.legend(["Normal Data", "Anomalous Data"])
-    plt.title(title + " | Threshold: " + str(threshold))
+    plt.legend(["Inlier Data", "Outlier Data"])
+    plt.title(model_name.upper() + " | " + title +
+              " | Threshold: " + str(threshold))
     plt.axvline(threshold, color="r", linestyle="dashed")
     plt.savefig("images/" + model_name + "/histogram.png")
 
@@ -65,7 +66,8 @@ def compute_accuracy(threshold, loss, y, dataset_name, show_roc=False, model_nam
         plt.ylim([0.0, 1.0])
         plt.xlabel('False Positive Rate or (1 - Specifity)')
         plt.ylabel('True Positive Rate or (Sensitivity)')
-        plt.title('Receiver Operating Characteristic')
+        plt.title(model_name.upper() + " | " +
+                  'Receiver Operating Characteristic')
         plt.legend(loc="lower right")
 
         plt.rcParams.update(plot_params)
