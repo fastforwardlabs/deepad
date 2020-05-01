@@ -6,8 +6,7 @@
 # =============================================================================
 #
 
-from mlflow import log_metric, log_param, log_artifact
-import mlflow
+
 import argparse
 from models.ae import AutoencoderModel
 from models.pca import PCAModel
