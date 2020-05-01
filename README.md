@@ -18,34 +18,45 @@ Anomalies, often referred to as outliers, abnormalities, rare events, or deviant
 │   │   ├── train.csv
 │   │   ├── test.csv
 ├── models
-│   ├── ae
+│   ├── ae  
 │   ├── bigan
 │   ├── ocsvm
 │   ├── vae
+├── utils
 ├── train.py 
 ```
- 
-To train the currently implemented models, run
+
+The `data` directory contains the dataset (kdd network intrusion) used the experiments. It contains a script (`data_gen.py`) that downloads the data and constructs train and test sets separated into inliers and outliers. The `models` directory contains code to specify the parameters of each model and methods for training as well as computing an anomaly score. `train.py` contains code to train each model and then evaluate each model (generate a histogram of anomaly scores assigned by each model, and ROC curve to assess model skill on the anomaly detection task).
 
 `python3 train.py`
 
 This checks for the available datasets (downloads them as needed), trains and evaluates implemented models.
 
-## Generating Benchmark Results
+## Summary of Results
+<div>
+<img src="images/ae/roc.png" width="33%">
+<img src="images/pca/roc.png" width="33%">
+<img src="images/ocsvm/roc.png" width="33%">
+</div>
+<div>
+<img src="images/ae/roc.png" width="33%">
+<img src="images/pca/roc.png" width="33%">
+<img src="images/ocsvm/roc.png" width="33%">
+</div>
 
-TODO: MLFlow instrumentation to track global metrics for a single view of all training operations.
+For each model, we use labeled test data to first select a threshold that yields the best accuracy and then report on metrics such as f1, f2, precision, and recall at that threshold. We also report on ROC (area under the curve) to evaluate the overall skill of each model. Given that the dataset we use is not extremely complex (18 features), we see that most models perform relatively well. Deep models (BiGAN, AE) are more robust (precision, recall, ROC AUC), compared to PCA and OCSVM. The sequence-to-sequence model is not particularly competitive, given the data is not temporal. On a more complex dataset (e.g., images), we expect to see (similar to existing research), more pronounced advantages in using a deep learning model.
+
+For additional details on each model, see our [report](https://ff12.fastforwardlabs.com/).
+
 
 ### Running on Cloudera Machine Learning
 
 TODO: Map application abstraction for easy deployment on Cloudera Machine Learning.
 
 ## TODO
-- Implement evaluation test harness
-    - flow for evaluating trained model and generating performance charts.
-    - integrate with MLFlow to easily visualize details for all runs
+
 - Map to CML
     - Export models from each run for use in CML application
     - CML model/application to host and interact with model endpoint  
-- Update Repo with insights from all runts
 - Stretch: Include image dataset.
  
