@@ -58,7 +58,6 @@ For each model, we use labeled test data to first select a threshold that yields
 For additional details on each model, see our [report](https://ff12.fastforwardlabs.com/).
 
  
-
 ## TODO
 
 - Map to CML Abstractions

@@ -111,12 +111,7 @@ def train_vae():
     print(outlier_scores)
     metrics = eval_utils.evaluate_model(
         inlier_scores, outlier_scores, model_name="vae")
-    # print(metrics)
-
-
-# train_autoencoder()
-# train_pca()
-train_vae()
+    print(metrics)
 
 
 def train_all():
@@ -124,3 +119,6 @@ def train_all():
     train_pca()
     train_vae()
     train_svm()
+
+
+train_all()
