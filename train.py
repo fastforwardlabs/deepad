@@ -10,6 +10,7 @@ from mlflow import log_metric, log_param, log_artifact
 import mlflow
 import argparse
 from models.ae import Autoencoder
+from models.pca import PCAModel
 from utils import data_utils, eval_utils
 
 
@@ -35,22 +36,33 @@ in_train, out_train, scaler = data_utils.load_kdd(
 in_test, out_test, _ = data_utils.load_kdd(
     data_path="data/kdd/", dataset_type="test", partition=test_data_partition, scaler=scaler)
 
-# Instantiate and Train Autoencoder
-ae_model_path = "models/savedmodels/ae/ae"
-ae_kwargs = {}
-ae_kwargs["latent_dim"] = 2
-ae_kwargs["hidden_dim"] = [15, 7]
-ae_kwargs["epochs"] = 14
-ae_kwargs["batch_size"] = 128
-ae_kwargs["model_path"] = ae_model_path
-ae = Autoencoder(in_train.shape[1], **ae_kwargs)
-# ae.train(in_train, in_test)
-# ae.save_model(ae_model_path)
 
-inlier_scores = ae.compute_anomaly_score(in_test)
-outlier_scores = ae.compute_anomaly_score(out_test)
-print(inlier_scores)
-print(outlier_scores)
-metrics = eval_utils.evaluate_model(
-    inlier_scores, outlier_scores, model_name="ae")
-print(metrics)
+def train_autoencoder():
+    # Instantiate and Train Autoencoder
+    ae_model_path = "models/savedmodels/ae/ae"
+    ae_kwargs = {}
+    ae_kwargs["latent_dim"] = 2
+    ae_kwargs["hidden_dim"] = [15, 7]
+    ae_kwargs["epochs"] = 14
+    ae_kwargs["batch_size"] = 128
+    ae_kwargs["model_path"] = ae_model_path
+    ae = Autoencoder(in_train.shape[1], **ae_kwargs)
+    # ae.train(in_train, in_test)
+    # ae.save_model(ae_model_path)
+
+    inlier_scores = ae.compute_anomaly_score(in_test)
+    outlier_scores = ae.compute_anomaly_score(out_test)
+    print(inlier_scores)
+    print(outlier_scores)
+    metrics = eval_utils.evaluate_model(
+        inlier_scores, outlier_scores, model_name="ae")
+    print(metrics)
+
+
+def train_pca():
+    num_features = 2
+    pca = PCAModel()
+    pca.train(in_train, num_features=num_features)
+
+
+train_pca
