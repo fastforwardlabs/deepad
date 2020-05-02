@@ -36,24 +36,21 @@ LEARNING_RATE = 0.00001
 
 
 class BiGANModel():
-    def __init__(self, n_features, hidden_layers=2, latent_dim=2, hidden_dim=[15, 7],
+    def __init__(self,  hidden_layers=2, input_shape=(18, 1, 1) latent_dim=2, hidden_dim=[15, 7],
                  output_activation='sigmoid', learning_rate=0.01, epochs=15, batch_size=128, model_path=None):
+        print("bigan")
+        self.create_model(n_features, input_shape=input_shape,
+                          learning_rate=learning_rate,)
 
-        self.max_accuracy = 0
-        self.is_training = False
-        self.img_rows = in_train.shape[1]
-        self.anomaly_score_weight = 0.2
-        self.img_cols = 1
-        self.channels = 1
-        self.img_shape = (self.img_rows, self.img_cols, self.channels)
+    def create_model(self, input_shape=(18, 1, 1),   learning_rate=0.01,):
+        self.input_shape = input_shape
         self.latent_dim = 32
 
         # optimizer = Adam(0.00001, 0.5)
-        optimizer = Adam(lr=LEARNING_RATE)
+        optimizer = Adam(lr=learning_rate)
 
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
-        print("discriminator =========")
         self.discriminator.summary()
         self.discriminator.name = "discriminator"
         self.discriminator.compile(loss=['binary_crossentropy'],
@@ -62,56 +59,49 @@ class BiGANModel():
 
         # Build the generator
         self.generator = self.build_generator()
-        print("generator =========")
-        self.generator.summary()
-        self.generator.name = "generator"
+        logging.debug(self.generator.summary())
 
         # Build the encoder
         self.encoder = self.build_encoder()
-        print("encoder =========")
-        self.encoder.summary()
-
-        self.encoder.name = "encoder"
+        logging.debug(self.encoder.summary())
 
         # The part of the bigan that trains the discriminator and encoder
         self.discriminator.trainable = False
 
-        # Generate image from sampled noise
+        # Generate output from sampled noise
         z = Input(shape=(self.latent_dim, ), name="inputnoise")
-        img_ = self.generator(z)
+        input_data_ = self.generator(z)
 
         # Encode image
-        img = Input(shape=self.img_shape,  name="inputimage")
-        z_ = self.encoder(img)
+        input_data = Input(shape=self.input_shape,  name="inputimage")
+        z_ = self.encoder(input_data)
 
-        # Latent -> img is fake, and img -> latent is valid
-        fake = self.discriminator([z, img_])
-        valid = self.discriminator([z_, img])
+        # Latent -> input_data is fake, and input_data -> latent is valid
+        fake = self.discriminator([z, input_data_])
+        valid = self.discriminator([z_, input_data])
 
         # Set up and compile the combined model
         # Trains generator to fool the discriminator
-        self.bigan_generator = Model([z, img], [fake, valid])
-        #  self.bigan_generator.compile(loss=['binary_crossentropy', 'binary_crossentropy'],
-        self.bigan_generator.compile(loss=['mse', 'mse'],
-                                     optimizer=optimizer)
+        self.bigan_generator = Model([z, input_data], [fake, valid])
+        self.bigan_generator.compile(
+            loss=['binary_crossentropy', 'binary_crossentropy'],   optimizer=optimizer)  # ['mse', 'mse']
         self.bigan_generator.name = "bigan"
 
-        print("Full Model =========")
-        self.bigan_generator.summary()
+        logging.debug(self.bigan_generator.summary())
 
     def build_encoder(self):
         model = Sequential()
 
-        model.add(Flatten(input_shape=self.img_shape))
+        model.add(Flatten(input_shape=self.input_shape))
         model.add(Dense(64))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dense(self.latent_dim))
 
         # Specify the input to the encoder model
-        img = Input(shape=self.img_shape)
+        input_data = Input(shape=self.input_shape)
 
-        z = model(img)
-        return Model(img, z)
+        z = model(input_data)
+        return Model(input_data, z)
 
     def build_generator(self):
         model = Sequential()
@@ -120,17 +110,17 @@ class BiGANModel():
         model.add(Activation('relu'))
         model.add(Dense(128))
         model.add(Activation('relu'))
-        model.add(Dense(np.prod(self.img_shape), activation='sigmoid'))
-        model.add(Reshape(self.img_shape))
+        model.add(Dense(np.prod(self.input_shape), activation='sigmoid'))
+        model.add(Reshape(self.input_shape))
 
         z = Input(shape=(self.latent_dim,))
-        gen_img = model(z)
+        input_data_ = model(z)
 
-        return Model(z, gen_img)
+        return Model(z, input_data_)
 
     def build_discriminator(self):
 
-        x = Input(shape=self.img_shape, name="inputimage")
+        x = Input(shape=self.input_shape, name="inputimage")
         x_ = LeakyReLU(alpha=0.2)(x)
         x_ = Dropout(0.2)(x)
 
