@@ -173,7 +173,7 @@ class Seq2SeqModel():
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['Train loss', 'Val Loss'], loc='upper left')
-        plt.show()
+        # plt.show()
 
     def decode_sequence(self, input_seq):
         """ Feed output of encoder to decoder and make sequential predictions. """
@@ -212,13 +212,13 @@ class Seq2SeqModel():
         decoded_seq = self.decode_sequence(input_seq)
         return input_seq[0, :, :], decoded_seq[0, :, :]
 
-    def compute_anomaly_score(self, df):
+    def compute_anomaly_score(self, input_data):
         print("  computing mse for test values")
-        mse_holder = []
-        for i in range(len(df)):
-            X = df[i, :].reshape(1, df.shape[1], 1)
-            input_data, preds = self.predict(X,)
-            mse = np.mean(np.power(input_data - preds, 2))
-            mse_holder.append(mse)
+        anomaly_score_holder = []
+        for i in range(len(input_data)):
+            X = input_data[i, :].reshape(1, input_data.shape[1], 1)
+            orig_input, preds = self.predict(X,)
+            mse = np.mean(np.power(orig_input - preds, 2))
+            anomaly_score_holder.append(mse)
 
-        return mse_holder
+        return anomaly_score_holder

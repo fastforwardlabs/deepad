@@ -107,6 +107,27 @@ def get_scores_and_labels(outlier_score, inlier_score):
     return all_scores, all_labels
 
 
+def plot_metrics(best_metrics, model_name="_", show_plot=False):
+    fig, ax = plt.subplots()
+    metrics = best_metrics.copy()
+    del metrics["threshold"]
+    ax.barh(list(metrics.keys()), list(metrics.values()), color="blue")
+    plt.title(model_name.upper() + " | " + ' Model Performance Metrics')
+    plt.xlabel('', fontsize=14)
+    plt.ylabel('Model Metrics', fontsize=16)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.box(False)
+    for i, v in enumerate(list(metrics.values())):
+        ax.text(v + 0.01, i, str(round(v, 3)), color='blue', fontsize=15)
+
+    plt.savefig("images/" + model_name + "/metrics.png")
+    if (show_plot):
+        plt.show()
+    else:
+        plt.close()
+
+
 def evaluate_model(inlier_score, outlier_score, model_name="_", show_plot=True):
     image_directory = "images/" + model_name
     if not os.path.exists(image_directory):
@@ -139,6 +160,8 @@ def evaluate_model(inlier_score, outlier_score, model_name="_", show_plot=True):
 
     plot_anomaly_histogram(inlier_score, outlier_score,
                            threshold=best_metrics["threshold"], model_name=model_name, show_plot=show_plot)
+
+    plot_metrics(best_metrics, show_plot=show_plot, model_name=model_name)
 
     return best_metrics
 

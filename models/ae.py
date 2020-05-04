@@ -143,7 +143,7 @@ class AutoencoderModel():
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
-        plt.show()
+        # plt.show()
 
     def compute_anomaly_score(self, df):
         preds = self.model.predict(df)

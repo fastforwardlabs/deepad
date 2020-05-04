@@ -58,7 +58,7 @@ def train_autoencoder():
     print(inlier_scores)
     print(outlier_scores)
     metrics = eval_utils.evaluate_model(
-        inlier_scores, outlier_scores, model_name="ae")
+        inlier_scores, outlier_scores, model_name="ae", show_plot=False)
     print(metrics)
 
 
@@ -72,7 +72,7 @@ def train_pca():
     print(inlier_scores)
     print(outlier_scores)
     metrics = eval_utils.evaluate_model(
-        inlier_scores, outlier_scores, model_name="pca")
+        inlier_scores, outlier_scores, model_name="pca", show_plot=False)
     print(metrics)
 
 
@@ -89,7 +89,7 @@ def train_svm():
     print(inlier_scores)
     print(outlier_scores)
     metrics = eval_utils.evaluate_model(
-        inlier_scores, outlier_scores, model_name="ocsvm")
+        inlier_scores, outlier_scores, model_name="ocsvm", show_plot=False)
     print(metrics)
 
 
@@ -111,7 +111,7 @@ def train_vae():
     print(inlier_scores)
     print(outlier_scores)
     metrics = eval_utils.evaluate_model(
-        inlier_scores, outlier_scores, model_name="vae")
+        inlier_scores, outlier_scores, model_name="vae", show_plot=False)
     print(metrics)
 
 
@@ -135,27 +135,30 @@ def train_bigan():
 
 
 def train_seq2seq():
-    seq2seq_kwargs = {}
-    seq2seq_kwargs["encoder_dim"] = [2]
-    seq2seq_kwargs["decoder_dim"] = [4]
-    seq2seq_kwargs["epochs"] = 2
-    seq2seq_kwargs["batch_size"] = 256
-    seq2seq_kwargs["learning_rate"] = 0.01
-    n_features = 1
-    seq2seq = Seq2SeqModel(n_features, **seq2seq_kwargs)
-    # seq models expect 3D sequences.
+    # seq2seq models require a dim 3 input matrix (rows, timesteps, num_features )
     in_train_x, in_test_x = np.expand_dims(
         in_train, axis=2), np.expand_dims(in_test, axis=2)
     print(in_train_x.shape, in_test_x.shape)
+
+    seq2seq_kwargs = {}
+    seq2seq_kwargs["encoder_dim"] = [1]
+    seq2seq_kwargs["decoder_dim"] = [2]
+    seq2seq_kwargs["epochs"] = 1
+    seq2seq_kwargs["batch_size"] = 256
+    seq2seq_kwargs["learning_rate"] = 0.01
+    n_features = 1  # single value per feature
+    seq2seq = Seq2SeqModel(n_features, **seq2seq_kwargs)
+    # seq models expect 3D sequences.
+
     seq2seq.train(in_train_x, in_test_x)
 
-    # inlier_scores = seq2seq.compute_anomaly_score(in_test)
-    # outlier_scores = seq2seq.compute_anomaly_score(out_test)
-    # print(inlier_scores)
-    # print(outlier_scores)
-    # metrics = eval_utils.evaluate_model(
-    #     inlier_scores, outlier_scores, model_name="seq2seq", show_plot=False)
-    # print(metrics)
+    inlier_scores = seq2seq.compute_anomaly_score(in_test_x[:10])
+    outlier_scores = seq2seq.compute_anomaly_score(out_test[:10])
+    print(inlier_scores)
+    print(outlier_scores)
+    metrics = eval_utils.evaluate_model(
+        inlier_scores, outlier_scores, model_name="seq2seq", show_plot=False)
+    print(metrics)
 
 
 def train_all():
@@ -163,6 +166,8 @@ def train_all():
     train_pca()
     train_vae()
     train_svm()
+    train_bigan()
+    train_seq2seq()
 
 
-train_seq2seq()
+train_all()

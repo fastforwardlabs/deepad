@@ -2,13 +2,13 @@
 
 <div>
 <img src="images/ae/histogram.png" width="33%">
-<img src="images/pca/histogram.png" width="33%">
-<img src="images/ocsvm/histogram.png" width="33%">
-</div>
-<div>
 <img src="images/vae/histogram.png" width="33%">
 <img src="images/bigan/histogram.png" width="33%">
-<img src="images/ocsvm/roc.png" width="33%">
+</div>
+<div>
+<img src="images/seq2seq/histogram.png" width="33%">
+<img src="images/pca/histogram.png" width="33%">
+<img src="images/ocsvm/histogram.png" width="33%">
 </div>
 
 > This repo contains code for experiments we have run at Cloudera Fast Forward for implementing deep learning for anomaly detection usecases. 
@@ -53,12 +53,12 @@ This checks for the available datasets (downloads them as needed), trains and ev
 ## Summary of Results
 <div>
 <img src="images/ae/roc.png" width="33%">
-<img src="images/pca/roc.png" width="33%">
-<img src="images/ocsvm/roc.png" width="33%">
-</div>
-<div>
 <img src="images/vae/roc.png" width="33%">
 <img src="images/bigan/roc.png" width="33%">
+</div>
+<div>
+<img src="images/seq2seq/roc.png" width="33%">
+<img src="images/pca/roc.png" width="33%">
 <img src="images/ocsvm/roc.png" width="33%">
 </div>
 
@@ -66,6 +66,17 @@ For each model, we use labeled test data to first select a threshold that yields
 
 For additional details on each model, see our [report](https://ff12.fastforwardlabs.com/).
 Note that models implemented here are optimized for tabular data. For example, extending this to work with image data will usually require the use of convolutional layers (as opposed to dense layers) within the neural network models to get good results.
+
+<div>
+<img src="images/ae/metrics.png" width="33%">
+<img src="images/vae/metrics.png" width="33%">
+<img src="images/bigan/metrics.png" width="33%">
+</div>
+<div>
+<img src="images/seq2seq/metrics.png" width="33%">
+<img src="images/pca/metrics.png" width="33%">
+<img src="images/ocsvm/metrics.png" width="33%">
+</div>
 
 ## How to Decide on a Modeling Approach?
 
@@ -85,5 +96,5 @@ sequence-to-sequence model (or architectures with _LSTM layers_) can model these
 - Map to CML Abstractions
     - Export models from each run for use in CML application
     - CML model/application to host and interact with model endpoint  
-- Stretch: Include image dataset.
+- ~Stretch: Include image dataset~.
  
