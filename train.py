@@ -118,7 +118,7 @@ def train_vae():
 def train_bigan():
     bigan_kwargs = {}
     bigan_kwargs["latent_dim"] = 2
-    bigan_kwargs["dense_dim"] = 128
+    bigan_kwargs["dense_dim"] = 32
     bigan_kwargs["epochs"] = 15
     bigan_kwargs["batch_size"] = 256
     bigan_kwargs["learning_rate"] = 0.01
