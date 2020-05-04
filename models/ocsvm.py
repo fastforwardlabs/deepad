@@ -11,6 +11,7 @@ import random
 import numpy as np
 from sklearn import svm
 
+
 np.random.seed(2018)
 np.random.RandomState(2018)
 random.seed(2018)

@@ -16,9 +16,9 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import plot_model
 from tensorflow.keras import regularizers
 import logging
-from tensorflow.keras.layers.advanced_activations import LeakyReLU, ReLU
+from tensorflow.keras.layers import LeakyReLU, ReLU
 
-from utils import train_utils
+
 import matplotlib.pyplot as plt
 
 import numpy as np
@@ -26,6 +26,7 @@ import random
 
 
 # set random seed for reproducibility
+tensorflow.random.set_seed(2018)
 np.random.seed(2018)
 np.random.RandomState(2018)
 random.seed(2018)
@@ -36,23 +37,25 @@ LEARNING_RATE = 0.00001
 
 
 class BiGANModel():
-    def __init__(self,  hidden_layers=2, input_shape=(18, 1, 1) latent_dim=2, hidden_dim=[15, 7],
+    def __init__(self,  input_shape, dense_dim=64, latent_dim=32,
                  output_activation='sigmoid', learning_rate=0.01, epochs=15, batch_size=128, model_path=None):
         print("bigan")
-        self.create_model(n_features, input_shape=input_shape,
+        self.epochs = epochs
+        self.dense_dim = dense_dim
+        self.batch_size = batch_size
+        self.latent_dim = latent_dim
+        self.create_model(input_shape=input_shape,
                           learning_rate=learning_rate,)
 
     def create_model(self, input_shape=(18, 1, 1),   learning_rate=0.01,):
         self.input_shape = input_shape
-        self.latent_dim = 32
 
         # optimizer = Adam(0.00001, 0.5)
         optimizer = Adam(lr=learning_rate)
 
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
-        self.discriminator.summary()
-        self.discriminator.name = "discriminator"
+        logging.debug(self.discriminator.summary())
         self.discriminator.compile(loss=['binary_crossentropy'],
                                    optimizer=optimizer,
                                    metrics=['accuracy'])
@@ -82,10 +85,10 @@ class BiGANModel():
 
         # Set up and compile the combined model
         # Trains generator to fool the discriminator
-        self.bigan_generator = Model([z, input_data], [fake, valid])
+        self.bigan_generator = Model(
+            [z, input_data], [fake, valid], name="bigan")
         self.bigan_generator.compile(
             loss=['binary_crossentropy', 'binary_crossentropy'],   optimizer=optimizer)  # ['mse', 'mse']
-        self.bigan_generator.name = "bigan"
 
         logging.debug(self.bigan_generator.summary())
 
@@ -93,7 +96,7 @@ class BiGANModel():
         model = Sequential()
 
         model.add(Flatten(input_shape=self.input_shape))
-        model.add(Dense(64))
+        model.add(Dense(self.dense_dim))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dense(self.latent_dim))
 
@@ -101,26 +104,26 @@ class BiGANModel():
         input_data = Input(shape=self.input_shape)
 
         z = model(input_data)
-        return Model(input_data, z)
+        return Model(input_data, z, name="encoder")
 
     def build_generator(self):
         model = Sequential()
 
-        model.add(Dense(64, input_dim=self.latent_dim))
+        model.add(Dense(self.dense_dim, input_dim=self.latent_dim))
         model.add(Activation('relu'))
-        model.add(Dense(128))
-        model.add(Activation('relu'))
+        # model.add(Dense(32))
+        # model.add(Activation('relu'))
         model.add(Dense(np.prod(self.input_shape), activation='sigmoid'))
         model.add(Reshape(self.input_shape))
 
         z = Input(shape=(self.latent_dim,))
         input_data_ = model(z)
 
-        return Model(z, input_data_)
+        return Model(z, input_data_, name="generator")
 
     def build_discriminator(self):
 
-        x = Input(shape=self.input_shape, name="inputimage")
+        x = Input(shape=self.input_shape, name="inputdata")
         x_ = LeakyReLU(alpha=0.2)(x)
         x_ = Dropout(0.2)(x)
 
@@ -130,49 +133,44 @@ class BiGANModel():
 
         d_in = concatenate([z_, Flatten()(x_)])
 
-        model = Dense(128)(d_in)
+        model = Dense(self.dense_dim)(d_in)
         model = LeakyReLU(alpha=0.1)(model)
         model = Dropout(0.2, name="discriminator_features")(model)
         validity = Dense(1, activation="sigmoid")(model)
 
-        return Model([z, x], validity)
+        return Model([z, x], validity, name="discriminator")
 
-    def train(self, epochs, batch_size=128, sample_interval=50):
+    def train(self, in_train, in_val):
 
-        self.is_training = True
-        # Load the dataset
-        X_train, _ = in_train, in_val
-
-        print(">> Training on data, ", X_train.shape)
-
-        self.train_ecg = X_train
+        print(">> Training on data, ", in_train.shape)
 
         # Adversarial ground truths
-        valid = np.ones((batch_size, 1))
-        fake = np.zeros((batch_size, 1))
+        valid = np.ones((self.batch_size, 1))
+        fake = np.zeros((self.batch_size, 1))
 
         # Store training metrics
         self.train_metrics = []
 
-        for epoch in range(epochs):
-
-            start_time = time.time()
+        for epoch in range(self.epochs):
+            self.train_metrics = []
             # ---------------------
             #  Train Discriminator
             # ---------------------
 
             # Sample noise and generate img
-            z = np.random.normal(size=(batch_size, self.latent_dim))
-            imgs_ = self.generator.predict(z)
+            z = np.random.normal(size=(self.batch_size, self.latent_dim))
+            input_data_ = self.generator.predict(z)
 
             # Select a random batch of images and encode
-            idx = np.random.randint(0, X_train.shape[0], batch_size)
-            imgs = X_train[idx]
-            z_ = self.encoder.predict(imgs)
+            idx = np.random.randint(0, in_train.shape[0], self.batch_size)
+            input_data = in_train[idx]
+            z_ = self.encoder.predict(input_data)
 
             # Train the discriminator (img -> z is valid, z -> img is fake)
-            d_loss_real = self.discriminator.train_on_batch([z_, imgs], valid)
-            d_loss_fake = self.discriminator.train_on_batch([z, imgs_], fake)
+            d_loss_real = self.discriminator.train_on_batch(
+                [z_, input_data], valid)
+            d_loss_fake = self.discriminator.train_on_batch(
+                [z, input_data_], fake)
             d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
 
             # ---------------------
@@ -181,10 +179,7 @@ class BiGANModel():
 
             # Train the generator (z -> img is valid and img -> z is is invalid)
             g_loss = self.bigan_generator.train_on_batch(
-                [z, imgs], [valid, fake])
-
-            # save time used to train gene and disceriminator
-            train_time_holder.append(time.time() - start_time)
+                [z, input_data], [valid, fake])
 
             d_accuracy = 100*d_loss[1]
             # Save training progresss statistics
@@ -195,24 +190,44 @@ class BiGANModel():
             })
 
             # If at save interval => save generated image samples
-            if epoch % sample_interval == 0:
-                print("%d [D loss: %f, acc: %.2f%%] [G loss: %f]" %
-                      (epoch, d_loss[0], 100*d_loss[1], g_loss[0]))
-                self.sample_interval(epoch)
-                # if ( d_accuracy > self.max_accuracy):
-                #   print("saving best model")
-                #   self.max_accuracy = d_accuracy
-                #   self.generator.save("models/generator.h5")
-                #   self.discriminator.save("models/discriminator.h5")
-                #   self.encoder.save("models/encoder.h5")
 
-    def sample_interval(self, epoch):
-        # load test data, use to evaluate the model.
-        # normal ecg is ecg belonging to class1, anomalous belongs to other 4 classes
-        normal_scores = compute_anomaly_score(in_test, bigan)
-        abnormal_scores = compute_anomaly_score(out_test, bigan)
-        best_metrics = plot_roc_histogram(
-            abnormal_scores, normal_scores, epoch)
-        print("best metrics", best_metrics, len(
-            normal_scores) + len(abnormal_scores))
-        # compute_loss_and_plot(in_val[:5000], out_val[:5000], epoch)
+            print("%d [D loss: %f, acc: %.2f%%] [G loss: %f]" %
+                  (epoch, d_loss[0], 100*d_loss[1], g_loss[0]))
+
+    def compute_anomaly_score(self, input_data, weight_parameter=0.1, lnorm_degree=1):
+        # Compute an intermediate model with the last layer of the trained discriminator
+        # This model is used to compute feature loss
+        feat_model = Model(inputs=self.discriminator.get_input_at(
+            0), outputs=self.discriminator.get_layer("discriminator_features").output)
+
+        # Compute z values from the input data using our encoder
+        z_ = self.encoder.predict(input_data)
+
+        # Now generate a reconstruction of input data using our generator and z_ from our encoder
+        input_data_ = self.generator.predict(z_)
+
+        # Generate loss as difference (L1 norm) between reconstructed input and actual input
+        delta = input_data - input_data_
+        delta = delta.reshape(delta.shape[0], -1)
+        gen_loss = np.linalg.norm(delta,  axis=1, ord=lnorm_degree)
+
+        # Compute discriminator loss based on cross entropy.
+        valid = np.ones((input_data.shape[0], 1))
+        # cross entropy loss.
+        disc_loss = self.discriminator.test_on_batch([z_, input_data_], valid)
+
+        # Compute discriminator loss based on feature matching differences (L1 norm)
+        f1 = feat_model.predict([z_, input_data])
+        f2 = feat_model.predict([z_, input_data_])
+        f_delta = f1 - f2
+        disc_loss_fm = np.linalg.norm(f_delta, axis=1, ord=lnorm_degree)
+
+        # Now compute final loss as convex combination of  both generator aad discriminator loss
+        final_loss_fm = (1 - weight_parameter) * gen_loss + \
+            weight_parameter*disc_loss_fm
+        final_loss = (1 - weight_parameter) * gen_loss + \
+            weight_parameter*disc_loss[0]
+
+        # print("Final loss :",  "min", np.min(final_loss), "max", np.max(final_loss), len(final_loss) )
+        # print("Final loss fm :",  "min", np.min(final_loss_fm), "max", np.max(final_loss_fm), len(final_loss_fm)  )
+        return final_loss

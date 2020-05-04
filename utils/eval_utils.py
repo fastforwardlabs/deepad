@@ -27,7 +27,7 @@ plot_params = {'legend.fontsize': 'large',
 plt.rcParams.update(plot_params)
 
 
-def plot_anomaly_histogram(inlier_score, outlier_score, title="Anomaly Score Histogram", threshold=0.5, model_name="_"):
+def plot_anomaly_histogram(inlier_score, outlier_score, title="Anomaly Score Histogram", threshold=0.5, model_name="_", show_plot=True):
     plt.figure()
     ndf = pd.DataFrame(data=inlier_score, columns=["score"])
     adf = pd.DataFrame(data=outlier_score, columns=["score"])
@@ -41,11 +41,13 @@ def plot_anomaly_histogram(inlier_score, outlier_score, title="Anomaly Score His
     plt.savefig("images/" + model_name + "/histogram.png")
 
     plt.rcParams.update(plot_params)
-    plt.show()
-    plt.close()
+    if (show_plot):
+        plt.show()
+    else:
+        plt.close()
 
 
-def compute_accuracy(threshold, loss, y, dataset_name, show_roc=False, model_name="_"):
+def compute_accuracy(threshold, loss, y, dataset_name, show_plot=False, model_name="_"):
     y_pred = np.array([1 if e > threshold else 0 for e in loss]).astype(int)
     acc_tot = accuracy_score(y, y_pred)
     prec_tot = precision_score(y, y_pred)
@@ -56,22 +58,25 @@ def compute_accuracy(threshold, loss, y, dataset_name, show_roc=False, model_nam
     fpr, tpr, thresholds = roc_curve(y, loss)
     roc_auc = roc_auc_score(y, loss)
 
-    if (show_roc):
-        plt.figure()
+    plt.figure()
 
-        # Plot ROC curve
-        plt.plot(fpr, tpr, label='ROC curve (area = %0.3f)' % roc_auc)
-        plt.plot([0, 1], [0, 1], 'k--')  # random predictions curve
-        plt.xlim([0.0, 1.0])
-        plt.ylim([0.0, 1.0])
-        plt.xlabel('False Positive Rate or (1 - Specifity)')
-        plt.ylabel('True Positive Rate or (Sensitivity)')
-        plt.title(model_name.upper() + " | " +
-                  'Receiver Operating Characteristic')
-        plt.legend(loc="lower right")
+    # Plot ROC curve
+    plt.plot(fpr, tpr, label='ROC curve (area = %0.3f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], 'k--')  # random predictions curve
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.0])
+    plt.xlabel('False Positive Rate or (1 - Specifity)')
+    plt.ylabel('True Positive Rate or (Sensitivity)')
+    plt.title(model_name.upper() + " | " +
+              'Receiver Operating Characteristic')
+    plt.legend(loc="lower right")
 
-        plt.rcParams.update(plot_params)
-        plt.savefig("images/" + model_name + "/roc.png")
+    plt.rcParams.update(plot_params)
+    plt.savefig("images/" + model_name + "/roc.png")
+    if (show_plot):
+        plt.show()
+    else:
+        plt.close()
 
     metrics = {"acc": acc_tot,
                "precision": prec_tot,
@@ -102,7 +107,7 @@ def get_scores_and_labels(outlier_score, inlier_score):
     return all_scores, all_labels
 
 
-def evaluate_model(inlier_score, outlier_score, model_name="_"):
+def evaluate_model(inlier_score, outlier_score, model_name="_", show_plot=True):
     image_directory = "images/" + model_name
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
@@ -130,10 +135,10 @@ def evaluate_model(inlier_score, outlier_score, model_name="_"):
 
     # show ROC for best accuracy model
     best_metrics = compute_accuracy(
-        dict(max_acc)["threshold"], all_scores, all_labels, "test data", model_name=model_name, show_roc=True)
+        dict(max_acc)["threshold"], all_scores, all_labels, "test data", model_name=model_name, show_plot=show_plot)
 
     plot_anomaly_histogram(inlier_score, outlier_score,
-                           threshold=best_metrics["threshold"], model_name=model_name)
+                           threshold=best_metrics["threshold"], model_name=model_name, show_plot=show_plot)
 
     return best_metrics
 

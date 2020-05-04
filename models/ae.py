@@ -25,6 +25,7 @@ import random
 
 
 # set random seed for reproducibility
+tensorflow.random.set_seed(2018)
 np.random.seed(2018)
 np.random.RandomState(2018)
 random.seed(2018)

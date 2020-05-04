@@ -19,6 +19,7 @@ import random
 
 
 # set random seed for reproducibility
+tensorflow.random.set_seed(2018)
 np.random.seed(2018)
 np.random.RandomState(2018)
 random.seed(2018)
@@ -144,7 +145,7 @@ class Seq2SeqModel():
             drawProgressBar(i/len(df))
             # print(i,len(mse_holder))
    
-  return mse_holder
+        return mse_holder
 
     def decode_sequence(self, input_seq):
          # ..

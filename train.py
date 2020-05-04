@@ -12,7 +12,7 @@ from models.ae import AutoencoderModel
 from models.pca import PCAModel
 from models.ocsvm import SVMModel
 from models.vae import VAEModel
-from models.vae import BiGANModel
+from models.bigan import BiGANModel
 
 from utils import data_utils, eval_utils
 
@@ -118,11 +118,20 @@ def train_vae():
 def train_bigan():
     bigan_kwargs = {}
     bigan_kwargs["latent_dim"] = 2
-    bigan_kwargs["hidden_dim"] = [15, 7]
-    bigan_kwargs["epochs"] = 8
-    bigan_kwargs["batch_size"] = 128
-    input_shape = (in_train[1], 1)
+    bigan_kwargs["dense_dim"] = 128
+    bigan_kwargs["epochs"] = 15
+    bigan_kwargs["batch_size"] = 256
+    bigan_kwargs["learning_rate"] = 0.01
+    input_shape = (in_train.shape[1], )
     bigan = BiGANModel(input_shape, **bigan_kwargs)
+    bigan.train(in_train, in_test)
+    inlier_scores = bigan.compute_anomaly_score(in_test)
+    outlier_scores = bigan.compute_anomaly_score(out_test)
+    print(inlier_scores)
+    print(outlier_scores)
+    metrics = eval_utils.evaluate_model(
+        inlier_scores, outlier_scores, model_name="bigan", show_plot=False)
+    print(metrics)
 
 
 def train_all():

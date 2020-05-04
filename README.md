@@ -7,7 +7,7 @@
 </div>
 <div>
 <img src="images/vae/histogram.png" width="33%">
-<img src="images/pca/roc.png" width="33%">
+<img src="images/bigan/histogram.png" width="33%">
 <img src="images/ocsvm/roc.png" width="33%">
 </div>
 
@@ -58,7 +58,7 @@ This checks for the available datasets (downloads them as needed), trains and ev
 </div>
 <div>
 <img src="images/vae/roc.png" width="33%">
-<img src="images/pca/roc.png" width="33%">
+<img src="images/bigan/roc.png" width="33%">
 <img src="images/ocsvm/roc.png" width="33%">
 </div>
 
@@ -68,7 +68,7 @@ For additional details on each model, see our [report](https://ff12.fastforwardl
 
  
 ## TODO
-- Finalize bigan and seq2seq train methods
+- Finalize seq2seq train methods
 - Map to CML Abstractions
     - Export models from each run for use in CML application
     - CML model/application to host and interact with model endpoint  
