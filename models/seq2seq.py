@@ -2,11 +2,14 @@
 # @license
 # Copyright 2020 Cloudera Fast Forward. https://github.com/fastforwardlabs
 # DeepAd: Experiments detecting Anomalies with Deep Neural Networks https://ff12.fastforwardlabs.com/.
-# Code samples adapted from https://github.com/eriklindernoren/Keras-GAN/blob/master/bigan/bigan.py
+# Code samples adapted from https://blog.keras.io/a-ten-minute-introduction-to-sequence-to-sequence-learning-in-keras.html
+# and Seldon alibi detect
 # Licensed under the MIT License (the "License");
 # =============================================================================
 #
 
+import tensorflow
+import logging
 from tensorflow.keras.layers import Input, LSTM, Dense, Bidirectional, Concatenate
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
@@ -16,6 +19,7 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 import random
+from utils import train_utils
 
 
 # set random seed for reproducibility
@@ -27,9 +31,9 @@ random.seed(2018)
 
 class Seq2SeqModel():
 
-     def __init__(self, n_features, hidden_layers=2, latent_dim=2, hidden_dim=[15, 7],
-                 output_activation='sigmoid', learning_rate=0.01, epochs=15, batch_size=128, model_path=None):
-         """ Build seq2seq model.
+    def __init__(self, n_features, encoder_dim=[10], decoder_dim=[20], dropout=0.2,
+                 loss='mean_squared_error', learning_rate=0.01, epochs=15, batch_size=128, output_activation='sigmoid'):
+        """ Build seq2seq model.
 
         Arguments:
             - n_features (int): number of features in the data
@@ -40,14 +44,16 @@ class Seq2SeqModel():
             - loss (str): loss function used
             - output_activation (str): activation type for the dense output layer in the decoder
         """
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.n_features = n_features
 
+        self.create_model(n_features, encoder_dim=encoder_dim, decoder_dim=decoder_dim, dropout=dropout, learning_rate=learning_rate,
+                          loss=loss, output_activation=output_activation)
 
+    def create_model(self, n_features, encoder_dim=[20], decoder_dim=[20], dropout=0.2, learning_rate=.001,
+                     loss='mean_squared_error', output_activation='sigmoid'):
 
-
-    def create_model(self, n_features, encoder_dim=[20], decoder_dim=[20], dropout=0., learning_rate=.001,
-                  loss='mean_squared_error', output_activation='sigmoid'):
-       
-        
         enc_dim = len(encoder_dim)
         dec_dim = len(decoder_dim)
 
@@ -99,12 +105,14 @@ class Seq2SeqModel():
         decoder_outputs = decoder_dense(decoder_hidden)
 
         # define seq2seq model
-        model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
+        self.model = Model([encoder_inputs, decoder_inputs],
+                           decoder_outputs, name="seq2seq")
         optimizer = Adam(lr=learning_rate)
-        model.compile(optimizer=optimizer, loss=loss)
+        self.model.compile(optimizer=optimizer, loss=loss)
 
         # define encoder model returning encoder states
-        encoder_model = Model(encoder_inputs, encoder_states * dec_dim)
+        self.encoder_model = Model(
+            encoder_inputs, encoder_states * dec_dim, name="encoder")
 
         # define decoder model
         # need state inputs for each LSTM layer
@@ -129,56 +137,88 @@ class Seq2SeqModel():
             state for states in decoder_states for state in states]
 
         decoder_outputs = decoder_dense(decoder_inference)
-        decoder_model = Model([decoder_inputs] + decoder_states_inputs,
-                              [decoder_outputs] + decoder_states)
+        self.decoder_model = Model([decoder_inputs] + decoder_states_inputs,
+                                   [decoder_outputs] + decoder_states, name="decoder")
+
+        logging.debug(self.encoder_model.summary())
+        logging.debug(self.decoder_model.summary())
+        logging.debug(self.model.summary())
 
         # return model, encoder_model, decoder_model
 
-    def compute_anomaly_score(self, df):
-        print( "  computing mse for test values")
-        mse_holder = []
-        for i in range( len(df)):
-            X = df[i,:].reshape(1,df.shape[1],1) 
-            input_data, preds = predict(X,)
-            mse = np.mean(np.power(input_data - preds, 2))
-            mse_holder.append(mse) 
-            drawProgressBar(i/len(df))
-            # print(i,len(mse_holder))
-   
-        return mse_holder
+    def train(self, in_train, in_test):
+
+        # define inputs
+        encoder_input_data = in_train
+        decoder_input_data = in_train
+        # offset decoder_input_data by 1 across time axis
+        decoder_target_data = np.roll(in_train, -1, axis=1)
+
+        kwargs = {}
+        kwargs['epochs'] = self.epochs
+        kwargs['batch_size'] = self.batch_size
+        kwargs['shuffle'] = True
+        # kwargs['validation_split'] = args.validation_split
+        kwargs['validation_data'] = (
+            [in_test, in_test], np.roll(in_test, -1, axis=1))
+        kwargs['verbose'] = 1
+        kwargs['callbacks'] = [train_utils.TimeHistory()]
+
+        history = self.model.fit(
+            [encoder_input_data, decoder_input_data], decoder_target_data, **kwargs)
+        # Plot training & validation loss values
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
+        plt.title('Model loss')
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.legend(['Train loss', 'Val Loss'], loc='upper left')
+        plt.show()
 
     def decode_sequence(self, input_seq):
-         # ..
-         """ Feed output of encoder to decoder and make sequential predictions. """
+        """ Feed output of encoder to decoder and make sequential predictions. """
 
+        timesteps = input_seq.shape[1]
         # use encoder the get state vectors
-        states_value = enc.predict(input_seq)
+        states_value = self.encoder_model.predict(input_seq)
 
         # generate initial target sequence
-        target_seq = input_seq[0,0,:].reshape((1,1,n_features))
+        target_seq = input_seq[0, 0, :].reshape((1, 1, self.n_features))
 
         # sequential prediction of time series
-        decoded_seq = np.zeros((1, timesteps, n_features))
-        decoded_seq[0,0,:] = target_seq[0,0,:]
+        decoded_seq = np.zeros((1, timesteps, self.n_features))
+        decoded_seq[0, 0, :] = target_seq[0, 0, :]
         i = 1
         while i < timesteps:
 
-            decoder_output = dec.predict([target_seq] + states_value)
+            decoder_output = self.decoder_model.predict(
+                [target_seq] + states_value)
             # update the target sequence
-            target_seq = np.zeros((1, 1, n_features))
+            target_seq = np.zeros((1, 1, self.n_features))
             target_seq[0, 0, :] = decoder_output[0]
 
             # update output
             decoded_seq[0, i, :] = decoder_output[0]
             # update states
             states_value = decoder_output[1:]
-            i+=1
+            i += 1
 
         return decoded_seq
 
-    def predict(self, X): 
-        n_obs = X.shape[0] 
-        obs = 0 
-        input_seq = X[obs:obs+1,:,:]
-        decoded_seq = decode_sequence(input_seq)  
-        return input_seq[0,:,:], decoded_seq[0,:,:]
+    def predict(self, input_data):
+        n_obs = input_data.shape[0]
+        obs = 0
+        input_seq = input_data[obs:obs+1, :, :]
+        decoded_seq = self.decode_sequence(input_seq)
+        return input_seq[0, :, :], decoded_seq[0, :, :]
+
+    def compute_anomaly_score(self, df):
+        print("  computing mse for test values")
+        mse_holder = []
+        for i in range(len(df)):
+            X = df[i, :].reshape(1, df.shape[1], 1)
+            input_data, preds = self.predict(X,)
+            mse = np.mean(np.power(input_data - preds, 2))
+            mse_holder.append(mse)
+
+        return mse_holder

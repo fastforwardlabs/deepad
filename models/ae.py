@@ -64,7 +64,7 @@ class AutoencoderModel():
                 dim /= 2
                 i += 1
 
-        # add regularization to minimize overfitting?
+        # Optional: add regularization to minimize overfitting?
         # kernel_regularizer = regularizers.l1_l2(l1=0.01, l2=0.01)
         # kernel_regularizer = regularizers.l1(0.01)
         kernel_regularizer = None

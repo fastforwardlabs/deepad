@@ -32,10 +32,6 @@ np.random.RandomState(2018)
 random.seed(2018)
 
 
-train_time_holder = []
-LEARNING_RATE = 0.00001
-
-
 class BiGANModel():
     def __init__(self,  input_shape, dense_dim=64, latent_dim=32,
                  output_activation='sigmoid', learning_rate=0.01, epochs=15, batch_size=128, model_path=None):
@@ -44,10 +40,11 @@ class BiGANModel():
         self.dense_dim = dense_dim
         self.batch_size = batch_size
         self.latent_dim = latent_dim
-        self.create_model(input_shape=input_shape,
-                          learning_rate=learning_rate,)
 
-    def create_model(self, input_shape=(18, 1, 1),   learning_rate=0.01,):
+        self.create_model(input_shape=input_shape,
+                          learning_rate=learning_rate)
+
+    def create_model(self, input_shape=(18, 1, 1),   learning_rate=0.01):
         self.input_shape = input_shape
 
         # optimizer = Adam(0.00001, 0.5)

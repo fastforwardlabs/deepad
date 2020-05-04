@@ -13,9 +13,9 @@ from models.pca import PCAModel
 from models.ocsvm import SVMModel
 from models.vae import VAEModel
 from models.bigan import BiGANModel
-
+from models.seq2seq import Seq2SeqModel
 from utils import data_utils, eval_utils
-
+import numpy as np
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -118,7 +118,7 @@ def train_vae():
 def train_bigan():
     bigan_kwargs = {}
     bigan_kwargs["latent_dim"] = 2
-    bigan_kwargs["dense_dim"] = 32
+    bigan_kwargs["dense_dim"] = 128
     bigan_kwargs["epochs"] = 15
     bigan_kwargs["batch_size"] = 256
     bigan_kwargs["learning_rate"] = 0.01
@@ -134,6 +134,30 @@ def train_bigan():
     print(metrics)
 
 
+def train_seq2seq():
+    seq2seq_kwargs = {}
+    seq2seq_kwargs["encoder_dim"] = [2]
+    seq2seq_kwargs["decoder_dim"] = [4]
+    seq2seq_kwargs["epochs"] = 2
+    seq2seq_kwargs["batch_size"] = 256
+    seq2seq_kwargs["learning_rate"] = 0.01
+    n_features = 1
+    seq2seq = Seq2SeqModel(n_features, **seq2seq_kwargs)
+    # seq models expect 3D sequences.
+    in_train_x, in_test_x = np.expand_dims(
+        in_train, axis=2), np.expand_dims(in_test, axis=2)
+    print(in_train_x.shape, in_test_x.shape)
+    seq2seq.train(in_train_x, in_test_x)
+
+    # inlier_scores = seq2seq.compute_anomaly_score(in_test)
+    # outlier_scores = seq2seq.compute_anomaly_score(out_test)
+    # print(inlier_scores)
+    # print(outlier_scores)
+    # metrics = eval_utils.evaluate_model(
+    #     inlier_scores, outlier_scores, model_name="seq2seq", show_plot=False)
+    # print(metrics)
+
+
 def train_all():
     train_autoencoder()
     train_pca()
@@ -141,4 +165,4 @@ def train_all():
     train_svm()
 
 
-train_bigan()
+train_seq2seq()
