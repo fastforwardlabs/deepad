@@ -206,7 +206,7 @@ def subset_kdd_data(dataset_path, dataset_type, keep_cols_arr, conf):
                    dataset_type + "_inliers.csv", index=False)
     outliers.to_csv(dataset_path + conf + "/" +
                     dataset_type + "_outliers.csv", index=False)
-    logging.info(">> saving ", dataset_type, " data")
+    logging.info(">> saving " + dataset_type + " data")
 
     return (inliers), (outliers)
 
