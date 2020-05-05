@@ -7,7 +7,7 @@
 # =============================================================================
 #
 
-from data.kdd import data_gen as kdd
+from data import kdd_data_gen as kdd
 import pandas as pd
 import os
 import numpy as np
