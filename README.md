@@ -48,7 +48,10 @@ The `data` directory contains the dataset (kdd network intrusion) used the exper
 
 `python3 train.py`
 
-This checks for the available datasets (downloads them as needed), trains and evaluates implemented models.
+This above script does the follow
+- Downloads the kdd dataset if not already downloaded
+- Trains all of the models ((Autoencoder, Variational Autoencoder, Bidirectional GAN, Sequence Models, PCA, OCSVM)
+- Evaluates the models on a test split (8000 inlier, 2000 outliers). Generates [charts](images) on model performance - Histogram of anomaly scores, ROC, general metrics (f1,f2, precision, recall, accuracy).
 
 ## Summary of Results
 <div>

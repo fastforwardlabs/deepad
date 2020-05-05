@@ -82,7 +82,7 @@ def train_svm():
     svm_kwargs["gamma"] = 0.5
     svm_kwargs["outlier_frac"] = 0.0001
     svm = SVMModel(**svm_kwargs)
-    svm.train(in_train, in_train)
+    svm.train(in_train, in_test)
 
     inlier_scores = svm.compute_anomaly_score(in_test)
     outlier_scores = svm.compute_anomaly_score(out_test)
@@ -136,14 +136,13 @@ def train_bigan():
 
 def train_seq2seq():
     # seq2seq models require a dim 3 input matrix (rows, timesteps, num_features )
-    in_train_x, in_test_x = np.expand_dims(
-        in_train, axis=2), np.expand_dims(in_test, axis=2)
-    print(in_train_x.shape, in_test_x.shape)
+    in_train_x, in_test_x, out_test_x = np.expand_dims(
+        in_train, axis=2), np.expand_dims(in_test, axis=2),  np.expand_dims(out_test, axis=2)
 
     seq2seq_kwargs = {}
-    seq2seq_kwargs["encoder_dim"] = [1]
-    seq2seq_kwargs["decoder_dim"] = [2]
-    seq2seq_kwargs["epochs"] = 1
+    seq2seq_kwargs["encoder_dim"] = [10]
+    seq2seq_kwargs["decoder_dim"] = [20]
+    seq2seq_kwargs["epochs"] = 40
     seq2seq_kwargs["batch_size"] = 256
     seq2seq_kwargs["learning_rate"] = 0.01
     n_features = 1  # single value per feature
@@ -152,8 +151,8 @@ def train_seq2seq():
 
     seq2seq.train(in_train_x, in_test_x)
 
-    inlier_scores = seq2seq.compute_anomaly_score(in_test_x[:10])
-    outlier_scores = seq2seq.compute_anomaly_score(out_test[:10])
+    inlier_scores = seq2seq.compute_anomaly_score(in_test_x)
+    outlier_scores = seq2seq.compute_anomaly_score(out_test_x)
     print(inlier_scores)
     print(outlier_scores)
     metrics = eval_utils.evaluate_model(
@@ -170,4 +169,4 @@ def train_all():
     train_seq2seq()
 
 
-train_all()
+train_seq2seq()
