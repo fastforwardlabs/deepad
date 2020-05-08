@@ -17,6 +17,7 @@ from models.seq2seq import Seq2SeqModel
 from utils import data_utils, eval_utils
 import numpy as np
 
+
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -38,28 +39,6 @@ in_train, out_train, scaler = data_utils.load_kdd(
     data_path="data/kdd/", dataset_type="train", partition=test_data_partition)
 in_test, out_test, _ = data_utils.load_kdd(
     data_path="data/kdd/", dataset_type="test", partition=test_data_partition, scaler=scaler)
-
-
-def train_autoencoder():
-    # Instantiate and Train Autoencoder
-    ae_model_path = "models/savedmodels/ae/ae"
-    ae_kwargs = {}
-    ae_kwargs["latent_dim"] = 2
-    ae_kwargs["hidden_dim"] = [15, 7]
-    ae_kwargs["epochs"] = 14
-    ae_kwargs["batch_size"] = 128
-    # ae_kwargs["model_path"] = ae_model_path
-    ae = AutoencoderModel(in_train.shape[1], **ae_kwargs)
-    ae.train(in_train, in_test)
-    ae.save_model(ae_model_path)
-
-    inlier_scores = ae.compute_anomaly_score(in_test)
-    outlier_scores = ae.compute_anomaly_score(out_test)
-    print(inlier_scores)
-    print(outlier_scores)
-    metrics = eval_utils.evaluate_model(
-        inlier_scores, outlier_scores, model_name="ae", show_plot=False)
-    print(metrics)
 
 
 def train_pca():
@@ -90,6 +69,28 @@ def train_svm():
     print(outlier_scores)
     metrics = eval_utils.evaluate_model(
         inlier_scores, outlier_scores, model_name="ocsvm", show_plot=False)
+    print(metrics)
+
+
+def train_autoencoder():
+    # Instantiate and Train Autoencoder
+    ae_model_path = "models/savedmodels/ae/ae"
+    ae_kwargs = {}
+    ae_kwargs["latent_dim"] = 2
+    ae_kwargs["hidden_dim"] = [15, 7]
+    ae_kwargs["epochs"] = 14
+    ae_kwargs["batch_size"] = 128
+    # ae_kwargs["model_path"] = ae_model_path
+    ae = AutoencoderModel(in_train.shape[1], **ae_kwargs)
+    ae.train(in_train, in_test)
+    ae.save_model(ae_model_path)
+
+    inlier_scores = ae.compute_anomaly_score(in_test)
+    outlier_scores = ae.compute_anomaly_score(out_test)
+    print(inlier_scores)
+    print(outlier_scores)
+    metrics = eval_utils.evaluate_model(
+        inlier_scores, outlier_scores, model_name="ae", show_plot=False)
     print(metrics)
 
 
@@ -147,14 +148,17 @@ def train_seq2seq():
     seq2seq_kwargs["learning_rate"] = 0.01
     n_features = 1  # single value per feature
     seq2seq = Seq2SeqModel(n_features, **seq2seq_kwargs)
-    # seq models expect 3D sequences.
-
     seq2seq.train(in_train_x, in_test_x)
+    seq2seq.save_model()
 
-    inlier_scores = seq2seq.compute_anomaly_score(in_test_x)
-    outlier_scores = seq2seq.compute_anomaly_score(out_test_x)
-    print(inlier_scores)
-    print(outlier_scores)
+    seq2seq.load_model()
+    inlier_scores = seq2seq.compute_anomaly_score(
+        in_test_x[np.random.randint(100, size=400), :])
+    outlier_scores = seq2seq.compute_anomaly_score(
+        out_test_x[np.random.randint(100, size=80), :])
+
+    print(inlier_scores[:5])
+    print(outlier_scores[:5])
     metrics = eval_utils.evaluate_model(
         inlier_scores, outlier_scores, model_name="seq2seq", show_plot=False)
     print(metrics)
@@ -169,4 +173,4 @@ def train_all():
     train_seq2seq()
 
 
-train_seq2seq()
+train_all()

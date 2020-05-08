@@ -17,7 +17,7 @@ from tensorflow.keras.utils import plot_model
 from tensorflow.keras import regularizers
 import logging
 from tensorflow.keras.layers import LeakyReLU, ReLU
-
+import os
 
 import matplotlib.pyplot as plt
 
@@ -228,3 +228,18 @@ class BiGANModel():
         # print("Final loss :",  "min", np.min(final_loss), "max", np.max(final_loss), len(final_loss) )
         # print("Final loss fm :",  "min", np.min(final_loss_fm), "max", np.max(final_loss_fm), len(final_loss_fm)  )
         return final_loss
+
+    def save_model(self, model_path="models/savedmodels/bigan/"):
+        logging.debug(">> Saving Bigan model to " + model_path)
+        self.bigan_generator.save_weights(model_path + "bigan_generator")
+        self.encoder.save_weights(model_path + "encoder")
+        self.discriminator.save_weights(model_path + "discriminator")
+        self.generator.save_weights(model_path + "generator")
+
+    def load_model(self, model_path="models/savedmodels/bigan/"):
+        if (os.path.exists(model_path)):
+            logging.debug(">> Loading saved model weights")
+            self.bigan_generator.load_weights(model_path + "bigan_generator")
+            self.encoder.load_weights(model_path + "encoder")
+            self.discriminator.load_weights(model_path + "discriminator")
+            self.generator.load_weights(model_path + "generator")

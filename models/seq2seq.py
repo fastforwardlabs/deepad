@@ -8,6 +8,7 @@
 # =============================================================================
 #
 
+import os
 import tensorflow
 import logging
 from tensorflow.keras.layers import Input, LSTM, Dense, Bidirectional, Concatenate
@@ -213,7 +214,7 @@ class Seq2SeqModel():
         return input_seq[0, :, :], decoded_seq[0, :, :]
 
     def compute_anomaly_score(self, input_data):
-        print("  computing mse for test values")
+        logging.debug(" >> Computing mse for test values")
         anomaly_score_holder = []
         for i in range(len(input_data)):
             X = input_data[i, :].reshape(1, input_data.shape[1], 1)
@@ -222,3 +223,16 @@ class Seq2SeqModel():
             anomaly_score_holder.append(mse)
 
         return anomaly_score_holder
+
+    def save_model(self, model_path="models/savedmodels/seq2seq/"):
+        logging.debug(">> Saving Bigan model to " + model_path)
+        self.model.save_weights(model_path + "model")
+        self.encoder_model.save_weights(model_path + "encoder")
+        self.decoder_model.save_weights(model_path + "decoder")
+
+    def load_model(self, model_path="models/savedmodels/seq2seq/"):
+        if (os.path.exists(model_path)):
+            logging.debug(">> Loading saved model weights")
+            self.model.load_weights(model_path + "model")
+            self.encoder_model.load_weights(model_path + "encoder")
+            self.decoder_model.load_weights(model_path + "decoder")

@@ -15,6 +15,8 @@ import matplotlib.pyplot as plt
 import logging
 import os
 
+from multiprocessing import Queue, Pool
+
 fig_size = (9, 6)
 fig_font = 15
 plot_params = {'legend.fontsize': 'large',
@@ -166,15 +168,10 @@ def evaluate_model(inlier_score, outlier_score, model_name="_", show_plot=True):
     return best_metrics
 
 
-def save_classification(loss, threshold, save_path):
+def save_metrics(loss, threshold, save_path):
     y_pred = [1 if e > threshold else 0 for e in loss]
     scores = loss
     class_vals = y_pred
     result = pd.DataFrame(
         {"scores": scores, "class": class_vals, "threshold": threshold})
     result = result.to_json(save_path, orient='records', lines=True)
-
-
-def get_classification(loss, threshold):
-    y_pred = [1 if e > threshold else 0 for e in loss]
-    return list(y_pred)

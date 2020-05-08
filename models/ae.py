@@ -17,6 +17,7 @@ from tensorflow.keras.utils import plot_model
 from tensorflow.keras import regularizers
 import logging
 
+import os
 from utils import train_utils
 import matplotlib.pyplot as plt
 
@@ -115,10 +116,6 @@ class AutoencoderModel():
         optimizer = Adam(lr=learning_rate)
         self.model.compile(optimizer=optimizer, loss="mse")
 
-        if model_path:
-            logging.debug(">> Loading saved model weights")
-            self.model.load_weights(model_path)
-
     def train(self, in_train, in_val):
         # default args
 
@@ -150,6 +147,11 @@ class AutoencoderModel():
         mse = np.mean(np.power(df - preds, 2), axis=1)
         return mse
 
-    def save_model(self, save_path):
-        logging.debug(">> Saving Autoencoder model to " + save_path)
-        self.model.save_weights(save_path)
+    def save_model(self, model_path="models/savedmodels/ae/"):
+        logging.debug(">> Saving AE model to " + model_path)
+        self.model.save_weights(model_path + "model")
+
+    def load_model(self, model_path="models/savedmodels/ae/"):
+        if (os.path.exists(model_path)):
+            logging.debug(">> Loading saved model weights")
+            self.model.load_weights(model_path + "model")

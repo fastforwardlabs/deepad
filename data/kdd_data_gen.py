@@ -224,7 +224,7 @@ def save_json_file(json_file_path, json_data):
 
 def generate_dataset():
 
-    logging.debug("Downloading KDD 99 dataset")
+    logging.debug(" >> Downloading KDD 99 dataset")
 
     mkdir("data/kdd")
     download_gzip(kdd_train_url, "data/kdd/train.csv")

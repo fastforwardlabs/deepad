@@ -17,6 +17,7 @@ from tensorflow.keras.utils import plot_model
 from tensorflow.keras import regularizers
 import logging
 
+import os
 from utils import train_utils
 import matplotlib.pyplot as plt
 
@@ -168,6 +169,11 @@ class VAEModel():
         mse = np.mean(np.power(df - preds, 2), axis=1)
         return mse
 
-    def save_model(self, save_path):
-        logging.debug(">> Saving VAE model to " + save_path)
-        self.model.save_weights(save_path)
+    def save_model(self, model_path="models/savedmodels/vae/"):
+        logging.debug(">> Saving VAE model to " + model_path)
+        self.model.save_weights(model_path + "model")
+
+    def load_model(self, model_path="models/savedmodels/vae/"):
+        if (os.path.exists(model_path)):
+            logging.debug(">> Loading saved model weights")
+            self.model.load_weights(model_path + "model")
