@@ -83,7 +83,7 @@ def train_autoencoder():
     # ae_kwargs["model_path"] = ae_model_path
     ae = AutoencoderModel(in_train.shape[1], **ae_kwargs)
     ae.train(in_train, in_test)
-    ae.save_model(ae_model_path)
+    ae.save_model()
 
     inlier_scores = ae.compute_anomaly_score(in_test)
     outlier_scores = ae.compute_anomaly_score(out_test)
@@ -96,7 +96,6 @@ def train_autoencoder():
 
 def train_vae():
     # Instantiate and Train Autoencoder
-    vae_model_path = "models/savedmodels/vae/vae"
     vae_kwargs = {}
     vae_kwargs["latent_dim"] = 2
     vae_kwargs["hidden_dim"] = [15, 7]
@@ -105,7 +104,7 @@ def train_vae():
     # vae_kwargs["model_path"] = ae_model_path
     vae = VAEModel(in_train.shape[1], **vae_kwargs)
     vae.train(in_train, in_test)
-    # # vae.save_model(ae_model_path)
+    ae.save_model()
 
     inlier_scores = vae.compute_anomaly_score(in_test)
     outlier_scores = vae.compute_anomaly_score(out_test)
@@ -126,6 +125,7 @@ def train_bigan():
     input_shape = (in_train.shape[1], )
     bigan = BiGANModel(input_shape, **bigan_kwargs)
     bigan.train(in_train, in_test)
+    bigan.save_model()
     inlier_scores = bigan.compute_anomaly_score(in_test)
     outlier_scores = bigan.compute_anomaly_score(out_test)
     print(inlier_scores)
@@ -151,7 +151,7 @@ def train_seq2seq():
     seq2seq.train(in_train_x, in_test_x)
     seq2seq.save_model()
 
-    seq2seq.load_model()
+    # seq2seq.load_model()
     inlier_scores = seq2seq.compute_anomaly_score(
         in_test_x[np.random.randint(100, size=400), :])
     outlier_scores = seq2seq.compute_anomaly_score(
