@@ -17,6 +17,7 @@ import logging
 
 def scale_data(df, scaler=None, drop_col="target", dim_size=2):
     df = df.drop(columns=drop_col)
+    col_names = df.columns
     if (not scaler):
         scaler = MinMaxScaler(feature_range=(0, 1))
         df = scaler.fit_transform(df)
@@ -25,7 +26,7 @@ def scale_data(df, scaler=None, drop_col="target", dim_size=2):
 
     # df = np.expand_dims(df, axis=dim_size)
     # df = np.expand_dims(df, axis=3)
-    return df, scaler
+    return df, scaler, col_names
 
 
 def load_kdd(data_path="data/kdd", dataset_type="all", partition="all", scaler=None):
@@ -43,6 +44,6 @@ def load_kdd(data_path="data/kdd", dataset_type="all", partition="all", scaler=N
     outliers = pd.read_csv(outlier_data_path)
 
     logging.debug(" >> KDD dataset loaded")
-    inliers, scaler = scale_data(inliers, scaler=scaler, dim_size=2)
-    outliers, _ = scale_data(outliers, scaler=scaler, dim_size=2)
-    return inliers, outliers, scaler
+    inliers, scaler, col_names = scale_data(inliers, scaler=scaler, dim_size=2)
+    outliers, _, _ = scale_data(outliers, scaler=scaler, dim_size=2)
+    return inliers, outliers, scaler, col_names

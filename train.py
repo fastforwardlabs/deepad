@@ -35,9 +35,9 @@ args = parser.parse_args()
 
 
 test_data_partition = "8020"
-in_train, out_train, scaler = data_utils.load_kdd(
+in_train, out_train, scaler, _ = data_utils.load_kdd(
     data_path="data/kdd/", dataset_type="train", partition=test_data_partition)
-in_test, out_test, _ = data_utils.load_kdd(
+in_test, out_test, _, _ = data_utils.load_kdd(
     data_path="data/kdd/", dataset_type="test", partition=test_data_partition, scaler=scaler)
 
 
