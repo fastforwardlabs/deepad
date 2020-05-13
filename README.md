@@ -1,14 +1,14 @@
 ## Deep Learning for Anomaly Detection
 
 <div>
-<img src="images/ae/histogram.png" width="33%">
-<img src="images/vae/histogram.png" width="33%">
-<img src="images/bigan/histogram.png" width="33%">
+<img src="metrics/ae/histogram.png" width="33%">
+<img src="metrics/vae/histogram.png" width="33%">
+<img src="metrics/bigan/histogram.png" width="33%">
 </div>
 <div>
-<img src="images/seq2seq/histogram.png" width="33%">
-<img src="images/pca/histogram.png" width="33%">
-<img src="images/ocsvm/histogram.png" width="33%">
+<img src="metrics/seq2seq/histogram.png" width="33%">
+<img src="metrics/pca/histogram.png" width="33%">
+<img src="metrics/ocsvm/histogram.png" width="33%">
 </div>
 
 > This repo contains code for experiments we have run at Cloudera Fast Forward for implementing deep learning for anomaly detection usecases. 
@@ -35,6 +35,8 @@ As an illustrative example, an autoencoder model is trained on normal samples wh
 │   │   ├── all.csv
 │   │   ├── train.csv
 │   │   ├── test.csv
+├── cml
+├── metrics
 ├── models
 │   ├── ae  
 │   ├── bigan
@@ -51,18 +53,18 @@ The `data` directory contains the dataset (kdd network intrusion) used the exper
 This above script does the follow
 - Downloads the kdd dataset if not already downloaded
 - Trains all of the models ((Autoencoder, Variational Autoencoder, Bidirectional GAN, Sequence Models, PCA, OCSVM)
-- Evaluates the models on a test split (8000 inlier, 2000 outliers). Generates [charts](images) on model performance - Histogram of anomaly scores, ROC, general metrics (f1,f2, precision, recall, accuracy).
+- Evaluates the models on a test split (8000 inlier, 2000 outliers). Generates [charts](metrics) on model performance - Histogram of anomaly scores, ROC, general metrics (f1,f2, precision, recall, accuracy).
 
 ## Summary of Results
 <div>
-<img src="images/ae/roc.png" width="33%">
-<img src="images/vae/roc.png" width="33%">
-<img src="images/bigan/roc.png" width="33%">
+<img src="metrics/ae/roc.png" width="33%">
+<img src="metrics/vae/roc.png" width="33%">
+<img src="metrics/bigan/roc.png" width="33%">
 </div>
 <div>
-<img src="images/seq2seq/roc.png" width="33%">
-<img src="images/pca/roc.png" width="33%">
-<img src="images/ocsvm/roc.png" width="33%">
+<img src="metrics/seq2seq/roc.png" width="33%">
+<img src="metrics/pca/roc.png" width="33%">
+<img src="metrics/ocsvm/roc.png" width="33%">
 </div>
 
 For each model, we use labeled test data to first select a threshold that yields the best accuracy and then report on metrics such as f1, f2, precision, and recall at that threshold. We also report on ROC (area under the curve) to evaluate the overall skill of each model. Given that the dataset we use is not extremely complex (18 features), we see that most models perform relatively well. Deep models (BiGAN, AE) are more robust (precision, recall, ROC AUC), compared to PCA and OCSVM. The sequence-to-sequence model is not particularly competitive, given the data is not temporal. On a more complex dataset (e.g., images), we expect to see (similar to existing research), more pronounced advantages in using a deep learning model.
@@ -71,14 +73,14 @@ For additional details on each model, see our [report](https://ff12.fastforwardl
 Note that models implemented here are optimized for tabular data. For example, extending this to work with image data will usually require the use of convolutional layers (as opposed to dense layers) within the neural network models to get good results.
 
 <div>
-<img src="images/ae/metrics.png" width="33%">
-<img src="images/vae/metrics.png" width="33%">
-<img src="images/bigan/metrics.png" width="33%">
+<img src="metrics/ae/metrics.png" width="33%">
+<img src="metrics/vae/metrics.png" width="33%">
+<img src="metrics/bigan/metrics.png" width="33%">
 </div>
 <div>
-<img src="images/seq2seq/metrics.png" width="33%">
-<img src="images/pca/metrics.png" width="33%">
-<img src="images/ocsvm/metrics.png" width="33%">
+<img src="metrics/seq2seq/metrics.png" width="33%">
+<img src="metrics/pca/metrics.png" width="33%">
+<img src="metrics/ocsvm/metrics.png" width="33%">
 </div>
 
 ## How to Decide on a Modeling Approach?
@@ -94,8 +96,6 @@ sequence-to-sequence model (or architectures with _LSTM layers_) can model these
 | Sequence-to-Sequence Model | <ul><li>Well suited for data with temporal components (e.g., discretized time series data)</li></ul>                                                                                                                                                                       | <ul><li>Slow inference (compute scales with sequence length which needs to be fixed)</li><li>Training can be slow</li><li>Limited accuracy when data contains features with no temporal dependence</li><li>Supports variational inference (probabilistic measure of uncertainty)</li></ul> |
 | One Class SVM             | <ul><li>Does not require a large amount of data</li><li>Fast to train</li><li>Fast inference time</li></ul>                                                                                                                                                                | <ul><li>Limited capacity in capturing complex relationships within data</li><li>Requires careful parameter selection (kernel, nu, gamma) that need to be carefully tuned.</li><li>Does not model a probability distribution, harder to compute estimates of confidence.</li></ul>         |
  
-## TODO
-- Map to CML Abstractions 
-    - CML model/application to host and interact with model endpoint  
-
+## Deploying on CML
+For users interested in deploying this application on Cloudera Machine Learning, see the [cml](folder) for additional details. 
  
