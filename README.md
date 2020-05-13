@@ -96,6 +96,6 @@ sequence-to-sequence model (or architectures with _LSTM layers_) can model these
 | Sequence-to-Sequence Model | <ul><li>Well suited for data with temporal components (e.g., discretized time series data)</li></ul>                                                                                                                                                                       | <ul><li>Slow inference (compute scales with sequence length which needs to be fixed)</li><li>Training can be slow</li><li>Limited accuracy when data contains features with no temporal dependence</li><li>Supports variational inference (probabilistic measure of uncertainty)</li></ul> |
 | One Class SVM             | <ul><li>Does not require a large amount of data</li><li>Fast to train</li><li>Fast inference time</li></ul>                                                                                                                                                                | <ul><li>Limited capacity in capturing complex relationships within data</li><li>Requires careful parameter selection (kernel, nu, gamma) that need to be carefully tuned.</li><li>Does not model a probability distribution, harder to compute estimates of confidence.</li></ul>         |
  
-## Deploying on CML
+## Deploying on Cloudera Machine Learning (CML)
 For users interested in deploying this application on Cloudera Machine Learning, see the [cml](folder) for additional details. 
  
