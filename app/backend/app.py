@@ -11,9 +11,10 @@ from utils import data_utils
 import numpy as np
 from flask import Flask, jsonify
 from models.ae import AutoencoderModel
+import logging
 
 app = Flask(__name__)
-
+logging.basicConfig(level=logging.INFO)
 
 test_data_partition = "8020"
 in_train, out_train, scaler, col_names = data_utils.load_kdd(

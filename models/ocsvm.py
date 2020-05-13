@@ -20,6 +20,7 @@ random.seed(2018)
 class SVMModel():
 
     def __init__(self, kernel="rbf", outlier_frac=0.0001, gamma=0.5):
+        self.name = "ocsvm"
         self.model = svm.OneClassSVM(
             nu=outlier_frac, kernel=kernel, gamma=gamma)
 

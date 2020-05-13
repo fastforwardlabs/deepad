@@ -18,7 +18,8 @@ random.seed(2018)
 
 
 class PCAModel():
-    # def __init__():
+    def __init__():
+        self.name = "pca"
 
     def train(self, in_train, in_val, num_features=2):
         num_features = min(num_features, in_train.shape[1])

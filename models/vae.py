@@ -44,7 +44,7 @@ class VAEModel():
             - output_activation (str): activation type for last dense layer in the decoder
             - learning_rate (float): learning rate used during training
         """
-
+        self.name = "vae"
         self.epochs = epochs
         self.batch_size = batch_size
 

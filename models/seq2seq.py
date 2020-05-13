@@ -45,6 +45,7 @@ class Seq2SeqModel():
             - loss (str): loss function used
             - output_activation (str): activation type for the dense output layer in the decoder
         """
+        self.name = "seq2seq"
         self.epochs = epochs
         self.batch_size = batch_size
         self.n_features = n_features

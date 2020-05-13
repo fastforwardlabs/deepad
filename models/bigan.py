@@ -36,6 +36,7 @@ class BiGANModel():
     def __init__(self,  input_shape, dense_dim=64, latent_dim=32,
                  output_activation='sigmoid', learning_rate=0.01, epochs=15, batch_size=128, model_path=None):
         print("bigan")
+        self.name = "bigan"
         self.epochs = epochs
         self.dense_dim = dense_dim
         self.batch_size = batch_size

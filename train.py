@@ -53,6 +53,7 @@ def train_pca():
     metrics = eval_utils.evaluate_model(
         inlier_scores, outlier_scores, model_name="pca", show_plot=False)
     print(metrics)
+    return metrics
 
 
 def train_svm():
@@ -70,15 +71,15 @@ def train_svm():
     metrics = eval_utils.evaluate_model(
         inlier_scores, outlier_scores, model_name="ocsvm", show_plot=False)
     print(metrics)
+    return metrics
 
 
 def train_autoencoder():
     # Instantiate and Train Autoencoder
-    ae_model_path = "models/savedmodels/ae/ae"
     ae_kwargs = {}
     ae_kwargs["latent_dim"] = 2
     ae_kwargs["hidden_dim"] = [15, 7]
-    ae_kwargs["epochs"] = 14
+    ae_kwargs["epochs"] = 1
     ae_kwargs["batch_size"] = 128
     # ae_kwargs["model_path"] = ae_model_path
     ae = AutoencoderModel(in_train.shape[1], **ae_kwargs)
@@ -92,6 +93,7 @@ def train_autoencoder():
     metrics = eval_utils.evaluate_model(
         inlier_scores, outlier_scores, model_name="ae", show_plot=False)
     print(metrics)
+    return metrics
 
 
 def train_vae():
@@ -104,7 +106,7 @@ def train_vae():
     # vae_kwargs["model_path"] = ae_model_path
     vae = VAEModel(in_train.shape[1], **vae_kwargs)
     vae.train(in_train, in_test)
-    ae.save_model()
+    vae.save_model()
 
     inlier_scores = vae.compute_anomaly_score(in_test)
     outlier_scores = vae.compute_anomaly_score(out_test)
@@ -113,6 +115,7 @@ def train_vae():
     metrics = eval_utils.evaluate_model(
         inlier_scores, outlier_scores, model_name="vae", show_plot=False)
     print(metrics)
+    return metrics
 
 
 def train_bigan():
@@ -133,6 +136,7 @@ def train_bigan():
     metrics = eval_utils.evaluate_model(
         inlier_scores, outlier_scores, model_name="bigan", show_plot=False)
     print(metrics)
+    return metrics
 
 
 def train_seq2seq():
@@ -162,6 +166,7 @@ def train_seq2seq():
     metrics = eval_utils.evaluate_model(
         inlier_scores, outlier_scores, model_name="seq2seq", show_plot=False)
     print(metrics)
+    return metrics
 
 
 def train_all():
@@ -173,4 +178,4 @@ def train_all():
     train_seq2seq()
 
 
-train_all()
+train_autoencoder()

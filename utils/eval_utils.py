@@ -14,6 +14,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import logging
 import os
+import json
 
 from multiprocessing import Queue, Pool
 
@@ -40,7 +41,7 @@ def plot_anomaly_histogram(inlier_score, outlier_score, title="Anomaly Score His
     plt.title(model_name.upper() + " | " + title +
               " | Threshold: " + str(threshold))
     plt.axvline(threshold, color="r", linestyle="dashed")
-    plt.savefig("images/" + model_name + "/histogram.png")
+    plt.savefig("metrics/" + model_name + "/histogram.png")
 
     plt.rcParams.update(plot_params)
     if (show_plot):
@@ -74,7 +75,7 @@ def compute_accuracy(threshold, loss, y, dataset_name, show_plot=False, model_na
     plt.legend(loc="lower right")
 
     plt.rcParams.update(plot_params)
-    plt.savefig("images/" + model_name + "/roc.png")
+    plt.savefig("metrics/" + model_name + "/roc.png")
     if (show_plot):
         plt.show()
     else:
@@ -123,15 +124,19 @@ def plot_metrics(best_metrics, model_name="_", show_plot=False):
     for i, v in enumerate(list(metrics.values())):
         ax.text(v + 0.01, i, str(round(v, 3)), color='blue', fontsize=15)
 
-    plt.savefig("images/" + model_name + "/metrics.png")
+    plt.savefig("metrics/" + model_name + "/metrics.png")
     if (show_plot):
         plt.show()
     else:
         plt.close()
 
+    # save metrics to json file
+    with open("metrics/" + model_name + "/metrics.json", 'w') as outfile:
+        json.dump(best_metrics, outfile)
+
 
 def evaluate_model(inlier_score, outlier_score, model_name="_", show_plot=True):
-    image_directory = "images/" + model_name
+    image_directory = "metrics/" + model_name
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
 
@@ -175,3 +180,9 @@ def save_metrics(loss, threshold, save_path):
     result = pd.DataFrame(
         {"scores": scores, "class": class_vals, "threshold": threshold})
     result = result.to_json(save_path, orient='records', lines=True)
+
+
+def load_metrics(metric_path):
+    with open(metric_path) as json_file:
+        data = json.load(json_file)
+        return data

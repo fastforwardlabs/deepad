@@ -7,6 +7,7 @@
 # =============================================================================
 #
 
+
 import tensorflow
 from tensorflow.keras.layers import Lambda, Input, Dense
 from tensorflow.keras.models import Model
@@ -48,6 +49,7 @@ class AutoencoderModel():
 
         self.epochs = epochs
         self.batch_size = batch_size
+        self.model_name = "ae"
 
         self.create_model(n_features, hidden_layers=hidden_layers, latent_dim=latent_dim,
                           hidden_dim=hidden_dim, output_activation=output_activation,
