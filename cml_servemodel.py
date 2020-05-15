@@ -6,131 +6,31 @@
 # =============================================================================
 #
 
-import os
-import time
-import datetime
-from cmlbootstrap import CMLBootstrap
+from models.ae import AutoencoderModel
 import numpy as np
-run_time_suffix = datetime.datetime.now()
-run_time_suffix = run_time_suffix.strftime("%d%m%Y%H%M%S")
+from utils.eval_utils import load_metrics
+import json
+
+ae_kwargs = {}
+in_shape = 18
+ae_kwargs["latent_dim"] = 2
+ae_kwargs["hidden_dim"] = [15, 7]
+ae_kwargs["epochs"] = 14
+ae_kwargs["batch_size"] = 128
+ae = AutoencoderModel(in_shape, **ae_kwargs)
+ae.load_model()
+
+metrics = load_metrics("metrics/" + ae.model_name + "/metrics.json")
 
 
-HOST = os.getenv("CDSW_API_URL").split(
-    ":")[0] + "://" + os.getenv("CDSW_DOMAIN")
-USERNAME = os.getenv("CDSW_PROJECT_URL").split("/")[6]
-API_KEY = os.getenv("CDSW_API_KEY")
-PROJECT_NAME = os.getenv("CDSW_PROJECT")
+def predict(args):
+    data = np.array(args)
+    if data.shape[1] != 18:
+        return {"status": "input data should have 18 features"}
+    scores = ae.compute_anomaly_score(data)
+    predictions = (scores > metrics["threshold"])
+    result = {"scores": scores.tolist(),
+              "predictions": list(predictions.tostring())
+              }
 
-
-cml = CMLBootstrap(HOST, USERNAME, API_KEY, PROJECT_NAME)
-
-
-# Get User Details
-user_details = cml.get_user({})
-user_obj = {"id": user_details["id"], "username": "vdibia",
-            "name": user_details["name"],
-            "type": user_details["type"],
-            "html_url": user_details["html_url"],
-            "url": user_details["url"]
-            }
-
-
-# Get Project Details
-project_details = cml.get_project({})
-project_id = project_details["id"]
-
-
-# Create Job
-create_jobs_params = {"name": "Train Autoencoder Model " + run_time_suffix,
-                      "type": "manual",
-                      "script": "cml/train_model.py",
-                      "timezone": "America/Los_Angeles",
-                      "environment": {},
-                      "kernel": "python3",
-                      "cpu": 1,
-                      "memory": 2,
-                      "nvidia_gpu": 0,
-                      "include_logs": True,
-                      "notifications": [
-                          {"user_id": user_obj["id"],
-                           "user":  user_obj,
-                           "success": False, "failure": False, "timeout": False, "stopped": False
-                           }
-                      ],
-                      "recipients": {},
-                      "attachments": [],
-                      "include_logs": True,
-                      "report_attachments": [],
-                      "success_recipients": [],
-                      "failure_recipients": [],
-                      "timeout_recipients": [],
-                      "stopped_recipients": []
-                      }
-
-new_job = cml.create_job(create_jobs_params)
-new_job_id = new_job["id"]
-print("Created new job with jobid", new_job_id)
-
-##
-# Start a job
-job_env_params = {}
-start_job_params = {"environment": job_env_params}
-job_status = cml.start_job(new_job_id, start_job_params)
-print("Job started")
-
-# Create model build script
-cdsw_script = """#!/bin/bash
-pip3 install -r requirements.txt"""
-
-with open("cdsw-build.sh", 'w+') as f:
-    f.write(cdsw_script)
-    f.close()
-os.chmod("cdsw-build.sh", 0o777)
-
-# Get Default Engine Details
-# Engine id is required for next step (create model)
-
-default_engine_details = cml.get_default_engine({})
-default_engine_image_id = default_engine_details["id"]
-
-# Create Model
-example_model_input = np.random.rand(3, 18).tolist()
-example_model_output = {'scores': [
-    0.3811887163134269, 0.34900869152707426, 0.25317983491992346], 'predictions': [True, True, True]}
-create_model_params = {
-    "projectId": project_id,
-    "name": "Anomaly Detection " + run_time_suffix,
-    "description": "Predict if data is normal or abnormal",
-    "visibility": "private",
-    "targetFilePath": "serve_model.py",
-    "targetFunctionName": "predict",
-    "engineImageId": default_engine_image_id,
-    "kernel": "python3",
-    "examples": [
-        {
-            "request": example_model_input,
-            "response": example_model_output
-        }],
-    "cpuMillicores": 1000,
-    "memoryMb": 2048,
-    "nvidiaGPUs": 0,
-    "replicationPolicy": {"type": "fixed", "numReplicas": 1},
-    "environment": {}}
-
-new_model_details = cml.create_model(create_model_params)
-access_key = new_model_details["accessKey"]  # todo check for bad response
-print("New model created with access key", access_key)
-
-
-# Wait for the model to deploy.
-is_deployed = False
-while is_deployed == False:
-    model = cml.get_model({"id": str(
-        new_model_details["id"]), "latestModelDeployment": True, "latestModelBuild": True})
-    if model["latestModelDeployment"]["status"] == 'deployed':
-        print("Model is deployed")
-        break
-    else:
-        print("Model deployment status .....",
-              model["latestModelDeployment"]["status"])
-        time.sleep(10)
+    return json.dumps(result)
