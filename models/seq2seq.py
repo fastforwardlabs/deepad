@@ -142,9 +142,9 @@ class Seq2SeqModel():
         self.decoder_model = Model([decoder_inputs] + decoder_states_inputs,
                                    [decoder_outputs] + decoder_states, name="decoder")
 
-        logging.debug(self.encoder_model.summary())
-        logging.debug(self.decoder_model.summary())
-        logging.debug(self.model.summary())
+        logging.info(self.encoder_model.summary())
+        logging.info(self.decoder_model.summary())
+        logging.info(self.model.summary())
 
         # return model, encoder_model, decoder_model
 
@@ -215,7 +215,7 @@ class Seq2SeqModel():
         return input_seq[0, :, :], decoded_seq[0, :, :]
 
     def compute_anomaly_score(self, input_data):
-        logging.debug(" >> Computing mse for test values")
+        logging.info(" >> Computing mse for test values")
         anomaly_score_holder = []
         for i in range(len(input_data)):
             X = input_data[i, :].reshape(1, input_data.shape[1], 1)
@@ -226,14 +226,14 @@ class Seq2SeqModel():
         return anomaly_score_holder
 
     def save_model(self, model_path="models/savedmodels/seq2seq/"):
-        logging.debug(">> Saving Bigan model to " + model_path)
+        logging.info(">> Saving Bigan model to " + model_path)
         self.model.save_weights(model_path + "model")
         self.encoder_model.save_weights(model_path + "encoder")
         self.decoder_model.save_weights(model_path + "decoder")
 
     def load_model(self, model_path="models/savedmodels/seq2seq/"):
         if (os.path.exists(model_path)):
-            logging.debug(">> Loading saved model weights")
+            logging.info(">> Loading saved model weights")
             self.model.load_weights(model_path + "model")
             self.encoder_model.load_weights(model_path + "encoder")
             self.decoder_model.load_weights(model_path + "decoder")

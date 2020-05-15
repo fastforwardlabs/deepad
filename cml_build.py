@@ -10,7 +10,7 @@ import os
 import time
 import datetime
 from cmlbootstrap import CMLBootstrap
-
+import numpy as np
 run_time_suffix = datetime.datetime.now()
 run_time_suffix = run_time_suffix.strftime("%d%m%Y%H%M%S")
 
@@ -43,7 +43,7 @@ project_id = project_details["id"]
 # Create Job
 create_jobs_params = {"name": "Train Autoencoder Model " + run_time_suffix,
                       "type": "manual",
-                      "script": "cml/train_model.py",
+                      "script": "cml_train.py",
                       "timezone": "America/Los_Angeles",
                       "environment": {},
                       "kernel": "python3",
@@ -70,3 +70,67 @@ create_jobs_params = {"name": "Train Autoencoder Model " + run_time_suffix,
 new_job = cml.create_job(create_jobs_params)
 new_job_id = new_job["id"]
 print("Created new job with jobid", new_job_id)
+
+##
+# Start a job
+job_env_params = {}
+start_job_params = {"environment": job_env_params}
+job_status = cml.start_job(new_job_id, start_job_params)
+print("Job started")
+
+# Create model build script
+cdsw_script = """#!/bin/bash
+pip3 install -r requirements.txt"""
+
+with open("cdsw-build.sh", 'w+') as f:
+    f.write(cdsw_script)
+    f.close()
+os.chmod("cdsw-build.sh", 0o777)
+
+# Get Default Engine Details
+# Engine id is required for next step (create model)
+
+default_engine_details = cml.get_default_engine({})
+default_engine_image_id = default_engine_details["id"]
+
+# Create Model
+example_model_input = np.random.rand(3, 18).tolist()
+example_model_output = {'scores': [
+    0.3811887163134269, 0.34900869152707426, 0.25317983491992346], 'predictions': [True, True, True]}
+create_model_params = {
+    "projectId": project_id,
+    "name": "Anomaly Detection " + run_time_suffix,
+    "description": "Predict if data is normal or abnormal",
+    "visibility": "private",
+    "targetFilePath": "cml_servemodel.py",
+    "targetFunctionName": "predict",
+    "engineImageId": default_engine_image_id,
+    "kernel": "python3",
+    "examples": [
+        {
+            "request": example_model_input,
+            "response": example_model_output
+        }],
+    "cpuMillicores": 1000,
+    "memoryMb": 2048,
+    "nvidiaGPUs": 0,
+    "replicationPolicy": {"type": "fixed", "numReplicas": 1},
+    "environment": {}}
+
+new_model_details = cml.create_model(create_model_params)
+access_key = new_model_details["accessKey"]  # todo check for bad response
+print("New model created with access key", access_key)
+
+
+# Wait for the model to deploy.
+is_deployed = False
+while is_deployed == False:
+    model = cml.get_model({"id": str(
+        new_model_details["id"]), "latestModelDeployment": True, "latestModelBuild": True})
+    if model["latestModelDeployment"]["status"] == 'deployed':
+        print("Model is deployed")
+        break
+    else:
+        print("Model deployment status .....",
+              model["latestModelDeployment"]["status"])
+        time.sleep(10)

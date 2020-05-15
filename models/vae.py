@@ -98,7 +98,7 @@ class VAEModel():
                    name='z')([z_mean, z_log_var])
         # instantiate encoder model
         encoder = Model(inputs, [z_mean, z_log_var, z], name='encoder')
-        logging.debug(encoder.summary())
+        logging.info(encoder.summary())
 
         # decoder
         latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
@@ -116,7 +116,7 @@ class VAEModel():
                         name='decoder_output')(dec_hidden)
         # instantiate decoder model
         decoder = Model(latent_inputs, outputs, name='decoder')
-        logging.debug(decoder.summary())
+        logging.info(decoder.summary())
 
         # instantiate VAE model
         outputs = decoder(encoder(inputs)[2])
@@ -135,7 +135,7 @@ class VAEModel():
         self.model.compile(optimizer=optimizer)
 
         if model_path:
-            logging.debug(">> Loading saved model weights")
+            logging.info(">> Loading saved model weights")
             self.model.load_weights(model_path)
 
     def train(self, in_train, in_val):
@@ -144,7 +144,7 @@ class VAEModel():
         # training
 
         X_train, X_val = in_train, in_val
-        logging.debug("Training with data of shape " + str(X_train.shape))
+        logging.info("Training with data of shape " + str(X_train.shape))
 
         kwargs = {}
         kwargs['epochs'] = self.epochs
@@ -163,6 +163,7 @@ class VAEModel():
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
         # plt.show()
+        plt.close()
 
     def compute_anomaly_score(self, df):
         preds = self.model.predict(df)
@@ -170,10 +171,10 @@ class VAEModel():
         return mse
 
     def save_model(self, model_path="models/savedmodels/vae/"):
-        logging.debug(">> Saving VAE model to " + model_path)
+        logging.info(">> Saving VAE model to " + model_path)
         self.model.save_weights(model_path + "model")
 
     def load_model(self, model_path="models/savedmodels/vae/"):
         if (os.path.exists(model_path)):
-            logging.debug(">> Loading saved model weights")
+            logging.info(">> Loading saved model weights")
             self.model.load_weights(model_path + "model")

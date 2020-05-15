@@ -87,7 +87,7 @@ class AutoencoderModel():
         z_ = Dense(latent_dim, name='z_')(enc_hidden)
 
         encoder = Model(inputs, z_, name='encoder')
-        logging.debug(encoder.summary())
+        logging.info(encoder.summary())
         # plot_model(encoder, to_file='ae_mlp_encoder.png',
         #            show_shapes=True)
 
@@ -107,7 +107,7 @@ class AutoencoderModel():
                         name='decoder_output')(dec_hidden)
         # instantiate decoder model
         decoder = Model(latent_inputs, outputs, name='decoder')
-        logging.debug(decoder.summary())
+        logging.info(decoder.summary())
         # plot_model(decoder, to_file='ae_mlp_decoder.png',
         #            show_shapes=True)
 
@@ -124,7 +124,7 @@ class AutoencoderModel():
         # training
 
         X_train, X_val = in_train, in_val
-        logging.debug("Training with data of shape " + str(X_train.shape))
+        logging.info("Training with data of shape " + str(X_train.shape))
 
         kwargs = {}
         kwargs['epochs'] = self.epochs
@@ -143,6 +143,7 @@ class AutoencoderModel():
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
         # plt.show()
+        plt.close()
 
     def compute_anomaly_score(self, df):
         preds = self.model.predict(df)
@@ -150,10 +151,10 @@ class AutoencoderModel():
         return mse
 
     def save_model(self, model_path="models/savedmodels/ae/"):
-        logging.debug(">> Saving AE model to " + model_path)
+        logging.info(">> Saving AE model to " + model_path)
         self.model.save_weights(model_path + "model")
 
     def load_model(self, model_path="models/savedmodels/ae/"):
         if (os.path.exists(model_path)):
-            logging.debug(">> Loading saved model weights")
+            logging.info(">> Loading saved model weights")
             self.model.load_weights(model_path + "model")

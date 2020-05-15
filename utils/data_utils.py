@@ -37,13 +37,13 @@ def load_kdd(data_path="data/kdd", dataset_type="all", partition="all", scaler=N
         data_path, partition, dataset_type + "_outliers.csv")
 
     if not os.path.exists(os.path.join(inlier_data_path)):
-        logging.debug(" >> Generating KDD dataset")
+        logging.info(" >> Generating KDD dataset")
         kdd.generate_dataset()
 
     inliers = pd.read_csv(inlier_data_path)
     outliers = pd.read_csv(outlier_data_path)
 
-    logging.debug(" >> KDD dataset loaded")
+    logging.info(" >> KDD dataset loaded")
     inliers, scaler, col_names = scale_data(inliers, scaler=scaler, dim_size=2)
     outliers, _, _ = scale_data(outliers, scaler=scaler, dim_size=2)
     return inliers, outliers, scaler, col_names

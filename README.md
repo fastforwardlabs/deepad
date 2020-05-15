@@ -97,5 +97,7 @@ sequence-to-sequence model (or architectures with _LSTM layers_) can model these
 | One Class SVM             | <ul><li>Does not require a large amount of data</li><li>Fast to train</li><li>Fast inference time</li></ul>                                                                                                                                                                | <ul><li>Limited capacity in capturing complex relationships within data</li><li>Requires careful parameter selection (kernel, nu, gamma) that need to be carefully tuned.</li><li>Does not model a probability distribution, harder to compute estimates of confidence.</li></ul>         |
  
 ## Deploying on Cloudera Machine Learning (CML)
-For users interested in deploying this application on Cloudera Machine Learning, see the [cml](folder) for additional details. 
+For users interested in deploying this application on Cloudera Machine Learning, you can build this project and auto deploy with the `cml_build.py` script.
+
+
  

@@ -145,20 +145,20 @@ def evaluate_model(inlier_score, outlier_score, model_name="_", show_plot=True):
     all_thresholds = list(set(all_scores))
     all_thresholds.sort()
 
-    logging.debug(str(len(all_thresholds)) + "unique thresholds")
-    logging.debug("Testing all thresholds to find best accuracy ...")
+    logging.info(str(len(all_thresholds)) + "unique thresholds")
+    logging.info("Testing all thresholds to find best accuracy ...")
     metric_holder = []
 
     for threshold in all_thresholds:
         metrics = test_threshold(threshold, all_scores, all_labels)
         metric_holder.append(metrics)
 
-    logging.debug("Threshold testing complete ...")
+    logging.info("Threshold testing complete ...")
 
     metric_df = pd.DataFrame(metric_holder)
     max_acc = metric_df.sort_values(
         by='acc', ascending=False, na_position='first').iloc[0]
-    logging.debug("Best accuracy is .. " + str(dict(max_acc)))
+    logging.info("Best accuracy is .. " + str(dict(max_acc)))
     # visualize_tested_metrics(metric_df, epoch)
 
     # show ROC for best accuracy model

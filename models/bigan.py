@@ -53,18 +53,18 @@ class BiGANModel():
 
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
-        logging.debug(self.discriminator.summary())
+        logging.info(self.discriminator.summary())
         self.discriminator.compile(loss=['binary_crossentropy'],
                                    optimizer=optimizer,
                                    metrics=['accuracy'])
 
         # Build the generator
         self.generator = self.build_generator()
-        logging.debug(self.generator.summary())
+        logging.info(self.generator.summary())
 
         # Build the encoder
         self.encoder = self.build_encoder()
-        logging.debug(self.encoder.summary())
+        logging.info(self.encoder.summary())
 
         # The part of the bigan that trains the discriminator and encoder
         self.discriminator.trainable = False
@@ -88,7 +88,7 @@ class BiGANModel():
         self.bigan_generator.compile(
             loss=['binary_crossentropy', 'binary_crossentropy'],   optimizer=optimizer)  # ['mse', 'mse']
 
-        logging.debug(self.bigan_generator.summary())
+        logging.info(self.bigan_generator.summary())
 
     def build_encoder(self):
         model = Sequential()
@@ -231,7 +231,7 @@ class BiGANModel():
         return final_loss
 
     def save_model(self, model_path="models/savedmodels/bigan/"):
-        logging.debug(">> Saving Bigan model to " + model_path)
+        logging.info(">> Saving Bigan model to " + model_path)
         self.bigan_generator.save_weights(model_path + "bigan_generator")
         self.encoder.save_weights(model_path + "encoder")
         self.discriminator.save_weights(model_path + "discriminator")
@@ -239,7 +239,7 @@ class BiGANModel():
 
     def load_model(self, model_path="models/savedmodels/bigan/"):
         if (os.path.exists(model_path)):
-            logging.debug(">> Loading saved model weights")
+            logging.info(">> Loading saved model weights")
             self.bigan_generator.load_weights(model_path + "bigan_generator")
             self.encoder.load_weights(model_path + "encoder")
             self.discriminator.load_weights(model_path + "discriminator")
