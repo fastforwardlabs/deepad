@@ -1,0 +1,11 @@
+
+.headertitle{
+    font-size: 1.1em;
+    font-weight: bold;
+    color: rgb(49, 48, 48);
+}
+
+.topbar{
+    height: 4px;
+    background-color: rgb(37, 83, 121);
+}
