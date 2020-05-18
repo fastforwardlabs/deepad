@@ -13,8 +13,8 @@ class GroupView extends Component {
 
         this.state = {
             visibleColumns: 12,
-            numDataRows: 50,
-            visibleRows: 15,
+            numDataRows: 300,
+            visibleRows: 300,
             // stickyHeader: true,
             tableTitle: " ",
             tableIsSortable: false,
@@ -30,6 +30,7 @@ class GroupView extends Component {
             dataLoaded: false,
             showTableView: true,
             maxNumericLength: 7,
+            tableHeight: "600px"
         }
 
         this.baseUrl = "http://localhost:5000"
@@ -48,6 +49,16 @@ class GroupView extends Component {
     // Hide detail view
     hideDetailView() {
         this.setState({ showTableView: true, showDetailView: false })
+    }
+
+    documentHeight() {
+        return Math.max(
+            document.documentElement.clientHeight,
+            document.body.scrollHeight,
+            document.documentElement.scrollHeight,
+            document.body.offsetHeight,
+            document.documentElement.offsetHeight
+        );
     }
 
     componentDidMount() {
@@ -74,6 +85,11 @@ class GroupView extends Component {
                 this.loadData()
             }
         })
+
+        let tableHeight = this.documentHeight() - 10 - document.getElementsByClassName("tablecontent")[0].getBoundingClientRect().top
+        console.log(tableHeight);
+        this.setState({ tableHeight: tableHeight + "px" })
+
 
     }
 
@@ -195,14 +211,14 @@ class GroupView extends Component {
                         }
                     </div>
 
-                    {this.state.showTableView && <div className=" mb10    datatable-body">
+                    {this.state.showTableView && <div className=" mb10  datatable-body">
                         <DataTable
                             isSortable={this.state.tableIsSortable}
                             rows={rows}
                             headers={headers}
                             render={({ rows, headers, getHeaderProps }) => (
                                 // <TableContainer title={this.state.tableTitle + this.state.datasetName}>
-                                <Table className="  tablecontent " stickyHeader={this.state.stickyHeader} size={this.state.tableSize}>
+                                <Table style={{ minHeight: this.state.tableHeight }} className=" tablecontent " stickyHeader={this.state.stickyHeader} size={this.state.tableSize}>
                                     <TableHead>
                                         <TableRow>
                                             {headers.map(header => (

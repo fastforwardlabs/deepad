@@ -32,9 +32,9 @@ class DetailView extends Component {
                 return (
                     <div key={"explanation" + index} className="flex detailrow" style={{ backgroundColor: this.props.cellColors[cellId] }} >
 
-                        <div className=" flex4  p10"> <span className="boldtext">{data.feature} </span>: {data.value}</div>
+                        <div className=" flex8  p10"> <span className="boldtext">{data.feature} </span>: {data.value}</div>
                         {/* <div className="p10 expdiv">  {data.explanation}</div> */}
-                        <div className="flex6 "> </div>
+                        <div className="flex2 "> </div>
                     </div>
                 )
             }
