@@ -41,7 +41,6 @@ in_test, out_test, _, _ = data_utils.load_kdd(
     data_path="data/kdd/", dataset_type="test", partition=test_data_partition, scaler=scaler)
 
 
-
 def train_pca():
     num_features = 2
     pca = PCAModel()

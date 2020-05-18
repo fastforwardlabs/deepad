@@ -1,9 +1,10 @@
+// Web interface to visualize example Anomaly Detection Interaction.
 import React, { Component } from "react";
 import { DataTable, InlineLoading } from 'carbon-components-react';
 import * as _ from "lodash"
-import { getJSONData, ColorExplanation, probabilityColor } from "../helperfunctions/HelperFunctions"
+import { getJSONData, ColorExplanation, probabilityColor, abbreviateString, postJSONData } from "../helperfunctions/HelperFunctions"
 import "./groupview.css"
-
+import DetailView from "../detailview/DetailView";
 const { Table, TableHead, TableHeader, TableBody, TableCell, TableRow } = DataTable;
 
 
@@ -13,22 +14,20 @@ class GroupView extends Component {
 
         this.state = {
             visibleColumns: 12,
-            visibleRows: 20,
-            stickyHeader: false,
+            numDataRows: 50,
+            visibleRows: 15,
+            // stickyHeader: true,
             tableTitle: " ",
             tableIsSortable: false,
             tableSize: "normal", //tall short normal
             dataRows: [],
             columnNames: ["id"],
             columnDescription: {},
-            explainMethod: "LIME",
             targetFeature: "",
-            datasetName: "IBM Churn Dataset",
-            numDataRows: 100,
+            datasetName: "KDD 99, Intrusion Detection",
             cellColors: {},
             selecetedRowid: 0,
-            loadedExplanationCount: 0,
-            explanationLoaded: false,
+            predictionsLoaded: false,
             dataLoaded: false,
             showTableView: true,
             maxNumericLength: 7,
@@ -36,14 +35,22 @@ class GroupView extends Component {
 
         this.baseUrl = "http://localhost:5000"
         this.dataEndpoint = "/data"
+        this.predictEndpoint = "/predict"
+
         this.colnameEndpoint = "/colnames"
 
         this.explanations = {}
 
-
+        this.hideDetailView = this.hideDetailView.bind(this);
 
 
     }
+
+    // Hide detail view
+    hideDetailView() {
+        this.setState({ showTableView: true, showDetailView: false })
+    }
+
     componentDidMount() {
         // Fetch Feature List / Data Header
         let getDataHeaderURL = this.baseUrl + this.colnameEndpoint
@@ -57,33 +64,39 @@ class GroupView extends Component {
                     coldesc.unshift("id")
                 }
 
-                // Add target label to headers
-                colnames.unshift("prediction")
-                coldesc.unshift("prediction")
 
                 // Add target label to headers
                 colnames.unshift(data["label"])
                 coldesc.unshift(data["label"])
 
+                // Add prediction label to headers
+                colnames.unshift("prediction")
+                coldesc.unshift("prediction")
+
+
                 this.setState({ columnNames: colnames, targetFeature: data["label"], columnDescription: coldesc })
                 this.loadData()
-
-
             }
         })
+
+        // document.getElementsByClassName("bx--data-table_inner-container")[0].style.height = "1000px"
+        // document.getElementsByClassName("bx--data-table")[0].style.height = "1000px"
+        // let tableContent = document.getElementsByClassName("bx--data-table_inner-container")[0]
+        // // tableContent.style.height = "1000px" //tableContent.getBoundingClientRect().top;
+        // console.log(tableContent);
+
     }
 
-    shortenVal(val, maxLength) {
-        return (val + "").substring(0, maxLength)
-    }
+
 
     loadData() {
         // Clear Cell Colors Dict
         this.setState({ cellColors: {} })
         // Fetch Data after features have arrived
-        let getDataURL = this.baseUrl + this.dataEndpoint + "?N=" + this.state.numDataRows
+        let getDataURL = this.baseUrl + this.dataEndpoint + "?n=" + this.state.numDataRows
         let data = getJSONData(getDataURL)
         data.then((data) => {
+
             //Create Colors for Target Column 
             let cellColors = {}
             // Datable requires string id
@@ -99,68 +112,37 @@ class GroupView extends Component {
                 dataRows: data, numDataRows: data.length, cellColors: cellColors,
                 dataLoaded: true
             })
-            // this.getExplanations(data)
+            this.getPredictions(data)
 
 
         })
     }
 
-    getExplanations(data) {
-        for (let row of data.slice(0, this.state.visibleRows)) {
-            let queryString = "?"
-            for (var key in row) {
-                if (row.hasOwnProperty(key)) {
-                    queryString += "&" + key + "=" + encodeURIComponent(row[key])
-                }
-            }
-            this.getExplanation(row["id"], queryString)
-        }
-    }
 
 
-
-
-    getExplanation(dataId, queryString) {
-        let explainURL = this.baseUrl + "/explain" + queryString
-        let explanation = getJSONData(explainURL)
-
-        explanation.then((data) => {
-            if (data) {
-                this.explanations[dataId] = data["explanation"]
-                this.updateCellColor(dataId, data["explanation"])
-                // console.log(data["explanation"], this.state.loadedExplanationCount);
-                this.setState({ loadedExplanationCount: this.state.loadedExplanationCount + 1 }, () => {
-                    if (this.state.loadedExplanationCount === this.state.visibleRows) {
-                        this.setState({ explanationLoaded: true })
-                    }
-                })
-            } else {
-                console.log("Failed to fetch explanation");
-
-            }
-        })
-    }
-
-    updateCellColor(dataId, row) {
-        // Set color of each feature based on a gradation on from its min to max
+    getPredictions(data) {
+        data = data.slice(0, this.state.visibleRows)
+        let predictURL = this.baseUrl + this.predictEndpoint
+        let predictions = postJSONData(predictURL, { data: data })
         let cellColors = this.state.cellColors
-        let rowMin = _.min(Object.values(row))
-        let rowMax = _.max(Object.values(row))
+        predictions.then((data) => {
+            let currentData = this.state.dataRows
 
-        for (var key in row) {
-            if (row.hasOwnProperty(key)) {
-                cellColors[dataId + ":" + key] = ColorExplanation(rowMin, rowMax, row[key])
+            for (let [i, row] of data["predictions"].entries()) {
+                currentData[i]["prediction"] = data["predictions"][i]
+                cellColors[data["ids"][i] + ":prediction"] = probabilityColor(data["predictions"][i])
             }
-        }
-        this.setState({ cellColors: cellColors })
-    }
-
-    clickRow(e, f) {
-        console.log(e, f);
-
+            this.setState({ dataRow: currentData, cellColors: cellColors, predictionsLoaded: true })
+        })
     }
 
 
+
+
+    clickRow(e) {
+        this.setState({ selecetedRowid: e.target.getAttribute("rowindex"), showTableView: false, showDetailView: true })
+
+    }
 
     render() {
         let headers = this.state.columnNames.slice(0, this.state.visibleColumns).map((data, index) => {
@@ -168,7 +150,7 @@ class GroupView extends Component {
         });
 
         // Add elispsis if we arent showing all feature columns
-        if (this.state.columnNames.length > this.state.visibleColumns) {
+        if (this.state.columnNames.length >= this.state.visibleColumns) {
             headers.push({ key: "...", header: "..." })
         }
 
@@ -176,11 +158,22 @@ class GroupView extends Component {
             let dataRow = {}
             for (let feature of this.state.columnNames.slice(0, this.state.numShow)) {
                 let featureValue = data[feature] === undefined ? "_" : data[feature]
-                dataRow[feature] = this.shortenVal(featureValue, this.state.maxNumericLength)
+                dataRow[feature] = abbreviateString(featureValue + "", this.state.maxNumericLength)
             }
             return (dataRow)
         });
 
+        let currentDataDetails = []
+
+        if (this.state.dataLoaded) {
+            let row = this.state.dataRows[this.state.selecetedRowid];
+            currentDataDetails = []
+            for (let key of Object.keys(row)) {
+                currentDataDetails.push({ id: row["id"], feature: key, value: row[key] })
+            }
+        }
+
+        console.log(currentDataDetails);
 
 
         return (
@@ -191,29 +184,40 @@ class GroupView extends Component {
                 </div>
                 <div className="flex">
 
-                    {!this.state.explanationLoaded &&
+                    {!this.state.predictionsLoaded &&
                         //
                         <div className="smalldesc   iblock flex">
                             <div className="iblock   mr5"> <InlineLoading></InlineLoading>  </div>
-                            <div className="iblock   flex flexcolumn flexjustifycenter"> loading explanations .. {this.state.loadedExplanationCount} of {this.state.visibleRows} </div>
+                            <div className="iblock   flex flexcolumn flexjustifycenter"> loading anomaly predictions ... </div>
 
                         </div>}
-                    {this.state.explanationLoaded && <div className="smalldesc p10  flex flexcolumn flexjustifycenter">Showing  {Math.min(this.state.visibleColumns, this.state.columnNames.length)} features of {this.state.visibleRows}  row. </div>}
+                    {this.state.predictionsLoaded && <div className="smalldesc p10  flex flexcolumn flexjustifycenter">Showing  {Math.min(this.state.visibleColumns, this.state.columnNames.length)}  of {this.state.columnNames.length}   features  {this.state.visibleRows}  rows. </div>}
 
                 </div>
-                <div style={{ width: Math.round(this.state.loadedExplanationCount / this.state.visibleRows * 100) + "%" }} className="glowbar mb5"></div>
 
+                <div className="positionrelative  ">
+                    <div className="positionabsolute   w100">
+                        {(this.state.dataLoaded && this.state.showDetailView) &&
+                            <div className=" ">
+                                <DetailView
+                                    dataDetails={currentDataDetails}
+                                    targetFeature={this.state.targetFeature}
+                                    cellColors={this.state.cellColors}
+                                    hideDetail={this.hideDetailView}
+                                    targetFeatureValue={this.state.dataRows[this.state.selecetedRowid][this.state.targetFeature]}
+                                ></DetailView>
+                            </div>
+                        }
+                    </div>
 
-                <div className="positionrelative">
-
-                    {this.state.showTableView && <div className=" mb10  datatable-body">
+                    {this.state.showTableView && <div className=" mb10    datatable-body">
                         <DataTable
                             isSortable={this.state.tableIsSortable}
                             rows={rows}
                             headers={headers}
                             render={({ rows, headers, getHeaderProps }) => (
                                 // <TableContainer title={this.state.tableTitle + this.state.datasetName}>
-                                <Table stickyHeader={this.state.stickyHeader} size={this.state.tableSize}>
+                                <Table className="  tablecontent " stickyHeader={this.state.stickyHeader} size={this.state.tableSize}>
                                     <TableHead>
                                         <TableRow>
                                             {headers.map(header => (

@@ -6,7 +6,7 @@ export function abbreviateString(value, maxLength) {
     if (value.length <= maxLength) {
         return value
     } else {
-        let retval = value.substring(0, maxLength) + " .."
+        let retval = value.substring(0, maxLength) + ".."
         return retval
     }
 }
@@ -107,12 +107,6 @@ export function ColorArrayRGB() {
     ]
     return colorArray
 }
-
-export const LeaderLine = window.LeaderLine;
-export const animOptions = { duration: 800, timing: 'ease' }
-export const greyColor = "rgba(189, 195, 199, 0.5)"
-export const blueColor = 'rgba(0,98,255, 1)'
-
 export const explanationColor = d3.scaleQuantize()
     .domain([-0.5, 0.8])
     .range([
@@ -123,11 +117,3 @@ export const probabilityColor = d3.scaleQuantize()
     .range([
         '#4393c3', '#92c5de', '#d1e5f0', '#f7f7f7', '#fddbc7', '#f4a582', '#d6604d'
     ]);
-
-// export const probabilityColor = d3.scaleQuantize()
-//     .domain(d3.extent(_.map(json, function (d) {
-//         return d.probability
-//     })))
-//     .range([
-//         '#4393c3', '#92c5de', '#d1e5f0', '#f7f7f7', '#fddbc7', '#f4a582', '#d6604d'
-//     ]);

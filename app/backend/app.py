@@ -8,6 +8,7 @@
 #
 
 from utils import data_utils
+from utils.eval_utils import load_metrics
 import numpy as np
 import pandas as pd
 from flask import Flask, jsonify, request
@@ -36,10 +37,11 @@ def load_autoencoder():
     ae_kwargs["batch_size"] = 128
     ae = AutoencoderModel(in_train.shape[1], **ae_kwargs)
     ae.load_model()
-    return ae
+    metrics = load_metrics("metrics/" + ae.model_name + "/metrics.json")
+    return ae, metrics
 
 
-ae = load_autoencoder()
+ae, metrics = load_autoencoder()
 
 
 def data_to_json(data, label):
@@ -55,8 +57,11 @@ def hello():
 
 @app.route('/data')
 def data():
-    inlier_size = 10
-    outlier_size = 5
+
+    data_size = int(request.args.get("n"))
+    data_size = 10 if data_size == None else data_size
+    inlier_size = int(0.8 * data_size)
+    outlier_size = int(0.3 * data_size)
     in_liers = data_to_json(
         in_test[np.random.randint(5, size=inlier_size), :], 0)
     out_liers = data_to_json(
@@ -74,18 +79,18 @@ def colnames():
     coldesc = [
         "Server Count",
         "Server Error Rate",
-        "srv_serror_rate",
-        "rerror_rate",
-        "srv_rerror_rate",
+        "Server S Error Rate",
+        "R Error Rate",
+        "Server R Error Rate",
         "Same Server Error Rate",
-        "Different Serer Error Rate",
-        "srv_diff_host_rate",
+        "Different Server Error Rate",
+        "Server Different Host Rate",
         "Destination Host Count",
         "Destination Host Server Count",
-        "dst_host_same_srv_rate",
-        "dst_host_diff_srv_rate",
-        "dst_host_same_src_port_rate",
-        "dst_host_srv_diff_host_rate",
+        "Destination Host Same Server Rate",
+        "Destination Host Different Server Rate",
+        "Destination Host Same Source Port Rate",
+        "Destination Host Server Different Host Rate",
         "dst_host_serror_rate",
         "dst_host_srv_serror_rate",
         "dst_host_rerror_rate",
@@ -96,13 +101,30 @@ def colnames():
     return jsonify(response)
 
 
-@app.route('/predict', methods=['GET', 'POST'])
-def predict():
-    data = []
-    if request.method == 'POST':
-        data = request.form["data"]
+def drop_cols(df, to_drop):
+    for col in to_drop:
+        if col in df.columns:
+            df = df.drop(columns=col)
+    return df
 
-    return jsonify(data)
+
+@app.route('/predict', methods=['GET', 'POST'])
+@cross_origin()
+def predict():
+    response = {}
+    data, scores, predictions, ids = [], [], [], []
+    if request.method == 'POST':
+        data = request.get_json()["data"]
+        data = pd.DataFrame(data)
+        ids = data["id"].tolist()
+        data = drop_cols(data, ["label", "id"])
+
+        scores = ae.compute_anomaly_score(data)
+        predictions = (scores > metrics["threshold"]) * 1
+
+    response = {"scores": scores.tolist(), "predictions": predictions.tolist(),
+                "threshold": metrics["threshold"], "ids": ids}
+    return jsonify(response)
 
 
 if __name__ == '__main__':
