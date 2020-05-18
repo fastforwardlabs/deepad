@@ -62,8 +62,6 @@ class GroupView extends Component {
                     colnames.unshift("id")
                     coldesc.unshift("id")
                 }
-
-
                 // Add target label to headers
                 colnames.unshift(data["label"])
                 coldesc.unshift(data["label"])
@@ -77,24 +75,16 @@ class GroupView extends Component {
             }
         })
 
-        // document.getElementsByClassName("bx--data-table_inner-container")[0].style.height = "1000px"
-        // document.getElementsByClassName("bx--data-table")[0].style.height = "1000px"
-        // let tableContent = document.getElementsByClassName("bx--data-table_inner-container")[0]
-        // // tableContent.style.height = "1000px" //tableContent.getBoundingClientRect().top;
-        // console.log(tableContent);
-
     }
 
 
-
+    // Load Data from Model End Point
     loadData() {
-        // Clear Cell Colors Dict
         this.setState({ cellColors: {} })
         // Fetch Data after features have arrived
         let getDataURL = this.baseUrl + this.dataEndpoint + "?n=" + this.state.numDataRows
         let data = getJSONData(getDataURL)
         data.then((data) => {
-
             //Create Colors for Target Column 
             let cellColors = {}
             // Datable requires string id
@@ -111,13 +101,11 @@ class GroupView extends Component {
                 dataLoaded: true
             })
             this.getPredictions(data)
-
-
         })
     }
 
 
-
+    // Make requests to model endpoint to get predictions
     getPredictions(data) {
         data = data.slice(0, this.state.visibleRows)
         let predictURL = this.baseUrl + this.predictEndpoint
@@ -134,6 +122,7 @@ class GroupView extends Component {
         })
     }
 
+    // handle row click event 
     clickRow(e) {
         this.setState({ selecetedRowid: e.target.getAttribute("rowindex"), showTableView: false, showDetailView: true })
     }
@@ -166,9 +155,6 @@ class GroupView extends Component {
                 currentDataDetails.push({ id: row["id"], feature: this.state.columnDescription[i], value: row[key] })
             }
         }
-
-
-
 
         return (
             <div>

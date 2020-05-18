@@ -11,16 +11,29 @@ from utils import data_utils
 from utils.eval_utils import load_metrics
 import numpy as np
 import pandas as pd
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS, cross_origin
 from models.ae import AutoencoderModel
 import logging
+import os
 
-app = Flask(__name__)
+
+logging.basicConfig(level=logging.INFO)
+
+
+# Point Flask to the front end directory
+root_file_path = os.path.dirname(os.path.abspath(__file__))
+root_file_path = root_file_path.replace("backend", "frontend")
+static_folder_root = os.path.join(root_file_path, "build")
+print(static_folder_root)
+
+app = Flask(__name__, static_url_path='',
+            static_folder=static_folder_root, template_folder=static_folder_root)
+
+
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-logging.basicConfig(level=logging.INFO)
 
 test_data_partition = "8020"
 in_train, out_train, scaler, col_names = data_utils.load_kdd(
@@ -52,7 +65,12 @@ def data_to_json(data, label):
 
 @app.route('/')
 def hello():
-    return "Hello World!"
+    return render_template('index.html')
+
+
+# @app.route('/build')
+# def build():
+#     return app.send_static_file('build/index.html')
 
 
 @app.route('/data')
