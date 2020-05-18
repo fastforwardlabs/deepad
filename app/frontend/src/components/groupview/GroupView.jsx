@@ -3,7 +3,6 @@ import { DataTable, InlineLoading } from 'carbon-components-react';
 import * as _ from "lodash"
 import { getJSONData, ColorExplanation, probabilityColor } from "../helperfunctions/HelperFunctions"
 import "./groupview.css"
-import DetailView from "../detailview/DetailView";
 
 const { Table, TableHead, TableHeader, TableBody, TableCell, TableRow } = DataTable;
 
@@ -13,7 +12,7 @@ class GroupView extends Component {
         super(props)
 
         this.state = {
-            visibleColumns: 9,
+            visibleColumns: 12,
             visibleRows: 20,
             stickyHeader: false,
             tableTitle: " ",
@@ -31,8 +30,8 @@ class GroupView extends Component {
             loadedExplanationCount: 0,
             explanationLoaded: false,
             dataLoaded: false,
-            showDetailView: false,
             showTableView: true,
+            maxNumericLength: 7,
         }
 
         this.baseUrl = "http://localhost:5000"
@@ -42,7 +41,7 @@ class GroupView extends Component {
         this.explanations = {}
 
 
-        this.hideDetailView = this.hideDetailView.bind(this);
+
 
     }
     componentDidMount() {
@@ -57,6 +56,11 @@ class GroupView extends Component {
                     colnames.unshift("id")
                     coldesc.unshift("id")
                 }
+
+                // Add target label to headers
+                colnames.unshift("prediction")
+                coldesc.unshift("prediction")
+
                 // Add target label to headers
                 colnames.unshift(data["label"])
                 coldesc.unshift(data["label"])
@@ -67,6 +71,10 @@ class GroupView extends Component {
 
             }
         })
+    }
+
+    shortenVal(val, maxLength) {
+        return (val + "").substring(0, maxLength)
     }
 
     loadData() {
@@ -126,14 +134,10 @@ class GroupView extends Component {
                         this.setState({ explanationLoaded: true })
                     }
                 })
-
-
             } else {
                 console.log("Failed to fetch explanation");
 
             }
-
-
         })
     }
 
@@ -146,22 +150,16 @@ class GroupView extends Component {
         for (var key in row) {
             if (row.hasOwnProperty(key)) {
                 cellColors[dataId + ":" + key] = ColorExplanation(rowMin, rowMax, row[key])
-
             }
-
         }
-
         this.setState({ cellColors: cellColors })
-
     }
 
     clickRow(e, f) {
-        this.setState({ selecetedRowid: e.target.getAttribute("rowindex"), showTableView: false, showDetailView: true })
+        console.log(e, f);
+
     }
 
-    hideDetailView() {
-        this.setState({ showTableView: true, showDetailView: false })
-    }
 
 
     render() {
@@ -177,24 +175,12 @@ class GroupView extends Component {
         let rows = this.state.dataRows.slice(0, this.state.visibleRows).map((data, index) => {
             let dataRow = {}
             for (let feature of this.state.columnNames.slice(0, this.state.numShow)) {
-                dataRow[feature] = data[feature]
+                let featureValue = data[feature] === undefined ? "_" : data[feature]
+                dataRow[feature] = this.shortenVal(featureValue, this.state.maxNumericLength)
             }
             return (dataRow)
         });
 
-        let fullExplanation = []
-
-        if (this.state.dataLoaded && this.state.explanationLoaded) {
-            let row = this.state.dataRows[this.state.selecetedRowid];
-            fullExplanation = []
-            for (let key of Object.keys(row)) {
-                fullExplanation.push({ id: row["id"], feature: key, value: row[key], explanation: this.explanations[row["id"]][key] || 0 })
-            }
-            // sort and show by explanation value
-            fullExplanation = _.sortBy(fullExplanation, o => {
-                return o.explanation === 0 ? Infinity : o.explanation
-            })
-        }
 
 
         return (
@@ -219,20 +205,7 @@ class GroupView extends Component {
 
 
                 <div className="positionrelative">
-                    <div className="positionabsolute  w100">
-                        {(this.state.dataLoaded && this.state.explanationLoaded && this.state.showDetailView) &&
-                            <div className=" ">
-                                <DetailView
-                                    explanation={fullExplanation}
-                                    targetFeature={this.state.targetFeature}
-                                    cellColors={this.state.cellColors}
-                                    hideDetail={this.hideDetailView}
-                                    targetFeature={this.state.targetFeature}
-                                    targetFeatureValue={this.state.dataRows[this.state.selecetedRowid][this.state.targetFeature]}
-                                ></DetailView>
-                            </div>
-                        }
-                    </div>
+
                     {this.state.showTableView && <div className=" mb10  datatable-body">
                         <DataTable
                             isSortable={this.state.tableIsSortable}
