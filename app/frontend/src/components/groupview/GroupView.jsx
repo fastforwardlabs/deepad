@@ -1,8 +1,7 @@
 // Web interface to visualize example Anomaly Detection Interaction.
 import React, { Component } from "react";
 import { DataTable, InlineLoading } from 'carbon-components-react';
-import * as _ from "lodash"
-import { getJSONData, ColorExplanation, probabilityColor, abbreviateString, postJSONData } from "../helperfunctions/HelperFunctions"
+import { getJSONData, probabilityColor, abbreviateString, postJSONData } from "../helperfunctions/HelperFunctions"
 import "./groupview.css"
 import DetailView from "../detailview/DetailView";
 const { Table, TableHead, TableHeader, TableBody, TableCell, TableRow } = DataTable;
@@ -73,7 +72,6 @@ class GroupView extends Component {
                 colnames.unshift("prediction")
                 coldesc.unshift("prediction")
 
-
                 this.setState({ columnNames: colnames, targetFeature: data["label"], columnDescription: coldesc })
                 this.loadData()
             }
@@ -128,20 +126,16 @@ class GroupView extends Component {
         predictions.then((data) => {
             let currentData = this.state.dataRows
 
-            for (let [i, row] of data["predictions"].entries()) {
-                currentData[i]["prediction"] = data["predictions"][i]
-                cellColors[data["ids"][i] + ":prediction"] = probabilityColor(data["predictions"][i])
+            for (let [i, prediction] of data["predictions"].entries()) {
+                currentData[i]["prediction"] = prediction
+                cellColors[data["ids"][i] + ":prediction"] = probabilityColor(prediction)
             }
             this.setState({ dataRow: currentData, cellColors: cellColors, predictionsLoaded: true })
         })
     }
 
-
-
-
     clickRow(e) {
         this.setState({ selecetedRowid: e.target.getAttribute("rowindex"), showTableView: false, showDetailView: true })
-
     }
 
     render() {
@@ -168,12 +162,12 @@ class GroupView extends Component {
         if (this.state.dataLoaded) {
             let row = this.state.dataRows[this.state.selecetedRowid];
             currentDataDetails = []
-            for (let key of Object.keys(row)) {
-                currentDataDetails.push({ id: row["id"], feature: key, value: row[key] })
+            for (let [i, key] of this.state.columnNames.entries()) {
+                currentDataDetails.push({ id: row["id"], feature: this.state.columnDescription[i], value: row[key] })
             }
         }
 
-        console.log(currentDataDetails);
+
 
 
         return (
@@ -182,8 +176,13 @@ class GroupView extends Component {
                 <div className="boldtext sectiontitle p10">
                     Anomaly Detection on Network Intrusion Data
                 </div>
+                <div className="mynotif mt10 h100 lh10  lightgreyhighlight p10 maxh16  mb10">
+                    The <a href="http://kdd.ics.uci.edu/databases/kddcup99/kddcup99.html" target="black">KDD network intrusion</a>  dataset is a dataset of TCP connections that have been labeled as normal or representative of network attacks.
+                    Each TCP connection is represented as a set of attributes or features (derived based on domain knowledge) pertaining to each connection such as the number of failed logins, connection duration, data bytes from source to destination, etc.
+                    The table below is a random sample of  <strong> {this.state.visibleRows}</strong> test data points which are being classified as normal or abnormal by a trained
+                    autoencoder model. The original ground truth label (label) as well as the prediction by the model is shown.
+                </div>
                 <div className="flex">
-
                     {!this.state.predictionsLoaded &&
                         //
                         <div className="smalldesc   iblock flex">
@@ -191,7 +190,7 @@ class GroupView extends Component {
                             <div className="iblock   flex flexcolumn flexjustifycenter"> loading anomaly predictions ... </div>
 
                         </div>}
-                    {this.state.predictionsLoaded && <div className="smalldesc p10  flex flexcolumn flexjustifycenter">Showing  {Math.min(this.state.visibleColumns, this.state.columnNames.length)}  of {this.state.columnNames.length}   features  {this.state.visibleRows}  rows. </div>}
+                    {this.state.predictionsLoaded && <div className="smalldesc p10  flex flexcolumn flexjustifycenter">Showing  {Math.min(this.state.visibleColumns, this.state.columnNames.length)}  of {this.state.columnNames.length}   columns  {this.state.visibleRows}  rows. </div>}
 
                 </div>
 

@@ -25,7 +25,7 @@ class DetailView extends Component {
         // console.log(this.props.explanation);
 
         let featureRows = this.props.dataDetails.map((data, index) => {
-            if ("a" === "b") {
+            if (data.feature === "id") {
                 return (<div key={"hiddenrow" + index}></div>)
             } else {
                 let cellId = data.id + ":" + data.feature

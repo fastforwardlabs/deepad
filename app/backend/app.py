@@ -58,8 +58,8 @@ def hello():
 @app.route('/data')
 def data():
 
-    data_size = int(request.args.get("n"))
-    data_size = 10 if data_size == None else data_size
+    data_size = request.args.get("n")
+    data_size = 10 if data_size == None else int(data_size)
     inlier_size = int(0.8 * data_size)
     outlier_size = int(0.3 * data_size)
     in_liers = data_to_json(
