@@ -99,5 +99,21 @@ sequence-to-sequence model (or architectures with _LSTM layers_) can model these
 ## Deploying on Cloudera Machine Learning (CML)
 For users interested in deploying this application on Cloudera Machine Learning, you can build this project and auto deploy with the `cml_build.py` script.
 
+```shell
+python3 cml_build.py
+```
+
+<img src="app/frontend/public/screen.jpg" width="100%">
+
+### How the CML Deploy Script Works
+
+- Model Training
+This section of the script schedules a CML job which consists of a call to `train.py`. This in turn trains a model and saves the model to the `models/savedmodel` folder.
+- Model Serving
+This section hosts a model prediction function as a rest based model end point. Input to this endpoint is normalized intrusion detection data and the output is a dictionary of scores and anomaly predictions for each instanec in the input data.
+- Application Serving
+This section hosts a custom web application (shown above) which makdes requests to the model endpoint and visualizes results.
+
+
 
  

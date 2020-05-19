@@ -1,4 +1,8 @@
 // Web interface to visualize example Anomaly Detection Interaction.
+// Data is visualized using the Carbon Desgin System Data Table.
+// Data is
+
+
 import React, { Component } from "react";
 import { DataTable, InlineLoading } from 'carbon-components-react';
 import { getJSONData, probabilityColor, abbreviateString, postJSONData } from "../helperfunctions/HelperFunctions"
@@ -38,12 +42,9 @@ class GroupView extends Component {
         this.predictEndpoint = "/predict"
 
         this.colnameEndpoint = "/colnames"
-
-        this.explanations = {}
-
         this.hideDetailView = this.hideDetailView.bind(this);
 
-
+        this.predictionTitle = "Model Prediction"
     }
 
     // Hide detail view
@@ -78,8 +79,8 @@ class GroupView extends Component {
                 coldesc.unshift(data["label"])
 
                 // Add prediction label to headers
-                colnames.unshift("prediction")
-                coldesc.unshift("prediction")
+                colnames.unshift(this.predictionTitle)
+                coldesc.unshift(this.predictionTitle)
 
                 this.setState({ columnNames: colnames, targetFeature: data["label"], columnDescription: coldesc })
                 this.loadData()
@@ -87,10 +88,8 @@ class GroupView extends Component {
         })
 
         let tableHeight = this.documentHeight() - 10 - document.getElementsByClassName("tablecontent")[0].getBoundingClientRect().top
-        console.log(tableHeight);
+
         this.setState({ tableHeight: tableHeight + "px" })
-
-
     }
 
 
@@ -131,8 +130,8 @@ class GroupView extends Component {
             let currentData = this.state.dataRows
 
             for (let [i, prediction] of data["predictions"].entries()) {
-                currentData[i]["prediction"] = prediction
-                cellColors[data["ids"][i] + ":prediction"] = probabilityColor(prediction)
+                currentData[i][this.predictionTitle] = prediction
+                cellColors[data["ids"][i] + ":" + this.predictionTitle] = probabilityColor(prediction)
             }
             this.setState({ dataRow: currentData, cellColors: cellColors, predictionsLoaded: true })
         })

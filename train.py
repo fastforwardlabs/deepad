@@ -79,7 +79,7 @@ def train_autoencoder():
     ae_kwargs = {}
     ae_kwargs["latent_dim"] = 2
     ae_kwargs["hidden_dim"] = [15, 7]
-    ae_kwargs["epochs"] = 1
+    ae_kwargs["epochs"] = 14
     ae_kwargs["batch_size"] = 128
     # ae_kwargs["model_path"] = ae_model_path
     ae = AutoencoderModel(in_train.shape[1], **ae_kwargs)
