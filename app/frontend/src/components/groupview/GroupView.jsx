@@ -197,8 +197,8 @@ class GroupView extends Component {
 
                 <div className="positionrelative  ">
                     <div className="positionabsolute   w100">
-                        {(this.state.dataLoaded && this.state.showDetailView) &&
-                            <div className=" ">
+                        {(this.state.dataLoaded) &&
+                            <div className={this.state.showDetailView ? "" : "displaynone"}>
                                 <DetailView
                                     dataDetails={currentDataDetails}
                                     targetFeature={this.state.targetFeature}
@@ -210,7 +210,7 @@ class GroupView extends Component {
                         }
                     </div>
 
-                    {this.state.showTableView && <div className=" mb10  datatable-body">
+                    {<div className={this.state.showTableView ? "mb10  datatable-body" : "displaynone"}>
                         <DataTable
                             isSortable={this.state.tableIsSortable}
                             rows={rows}
