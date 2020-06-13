@@ -156,14 +156,14 @@ class VAEModel():
 
         history = self.model.fit(X_train, **kwargs)
         # Plot training & validation loss values
-        plt.plot(history.history['loss'])
-        plt.plot(history.history['val_loss'])
-        plt.title('Model loss')
-        plt.ylabel('Loss')
-        plt.xlabel('Epoch')
-        plt.legend(['Train', 'Test'], loc='upper left')
-        # plt.show()
-        plt.close()
+        # plt.plot(history.history['loss'])
+        # plt.plot(history.history['val_loss'])
+        # plt.title('Model loss')
+        # plt.ylabel('Loss')
+        # plt.xlabel('Epoch')
+        # plt.legend(['Train', 'Test'], loc='upper left')
+        # # plt.show()
+        # plt.close()
 
     def compute_anomaly_score(self, df):
         preds = self.model.predict(df)

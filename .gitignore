@@ -1,4 +1,5 @@
 mlruns
+data
 savedmodels
 .DS_Store
 # Byte-compiled / optimized / DLL files

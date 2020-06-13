@@ -45,7 +45,7 @@ project_id = project_details["id"]
 # Create Job
 create_jobs_params = {"name": "Train Autoencoder Model " + run_time_suffix,
                       "type": "manual",
-                      "script": "cml_train.py",
+                      "script": "train.py",
                       "timezone": "America/Los_Angeles",
                       "environment": {},
                       "kernel": "python3",
