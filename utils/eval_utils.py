@@ -19,6 +19,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
+
 fig_size = (9, 6)
 fig_font = 15
 plot_params = {'legend.fontsize': 'large',
