@@ -12,15 +12,17 @@ tasks:
     name: Install dependencies
     entity_label: install_deps
     script: install_deps.py
-    arguments: None
-    short_summary: Job to install project dependencies.
+    arguments: None 
+    cpu: 1
+    memory: 2
+    short_summary: Create job to install project dependencies.
     environment:
       TASK_TYPE: CREATE/RUN_JOB
     kernel: python3
 
   - type: run_job
     entity_label: install_deps
-    short_summary: Running install dependencies training job.
+    short_summary: Running install dependencies job.
     long_summary: >-
       Running the job to install dependencies.
 
@@ -29,7 +31,9 @@ tasks:
     entity_label: train_model
     script: train.py
     arguments: None
-    short_summary: Job to train and export model.
+    short_summary: Job to train and export model. Note that this requires at least 2GB of memory. 
+    cpu: 1
+    memory: 2
     environment:
       TASK_TYPE: CREATE/RUN_JOB
     kernel: python3
@@ -42,6 +46,7 @@ tasks:
 
   - type: start_application
     name: Application to serve Deep Learning for Anomaly Detectionn UI
+    short_summary: Create an application to serve the Anomaly Detection UI.
     subdomain: deepad
     script: app.py
     environment_variables:
