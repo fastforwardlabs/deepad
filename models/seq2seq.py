@@ -167,14 +167,6 @@ class Seq2SeqModel():
 
         history = self.model.fit(
             [encoder_input_data, decoder_input_data], decoder_target_data, **kwargs)
-        # Plot training & validation loss values
-        # plt.plot(history.history['loss'])
-        # plt.plot(history.history['val_loss'])
-        # plt.title('Model loss')
-        # plt.ylabel('Loss')
-        # plt.xlabel('Epoch')
-        # plt.legend(['Train loss', 'Val Loss'], loc='upper left')
-        # plt.show()
 
     def decode_sequence(self, input_seq):
         """ Feed output of encoder to decoder and make sequential predictions. """
