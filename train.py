@@ -19,7 +19,7 @@ import numpy as np
 
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 parser = argparse.ArgumentParser(description='Process train parameters')

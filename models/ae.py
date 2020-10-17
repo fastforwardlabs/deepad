@@ -20,7 +20,6 @@ import logging
 
 import os
 from utils import train_utils
-import matplotlib.pyplot as plt
 
 import numpy as np
 import random
@@ -134,16 +133,7 @@ class AutoencoderModel():
         kwargs['verbose'] = 1
         kwargs['callbacks'] = [train_utils.TimeHistory()]
 
-        history = self.model.fit(X_train, X_trains, **kwargs)
-        # Plot training & validation loss values
-        # plt.plot(history.history['loss'])
-        # plt.plot(history.history['val_loss'])
-        # plt.title('Model loss')
-        # plt.ylabel('Loss')
-        # plt.xlabel('Epoch')
-        # plt.legend(['Train', 'Test'], loc='upper left')
-        # # plt.show()
-        # plt.close()
+        history = self.model.fit(X_train, X_train, **kwargs)
 
     def compute_anomaly_score(self, df):
         preds = self.model.predict(df)

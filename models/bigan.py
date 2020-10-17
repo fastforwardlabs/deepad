@@ -19,7 +19,6 @@ import logging
 from tensorflow.keras.layers import LeakyReLU, ReLU
 import os
 
-import matplotlib.pyplot as plt
 
 import numpy as np
 import random

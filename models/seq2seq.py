@@ -16,7 +16,6 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
 from utils import train_utils
-import matplotlib.pyplot as plt
 
 import numpy as np
 import random
@@ -169,12 +168,12 @@ class Seq2SeqModel():
         history = self.model.fit(
             [encoder_input_data, decoder_input_data], decoder_target_data, **kwargs)
         # Plot training & validation loss values
-        plt.plot(history.history['loss'])
-        plt.plot(history.history['val_loss'])
-        plt.title('Model loss')
-        plt.ylabel('Loss')
-        plt.xlabel('Epoch')
-        plt.legend(['Train loss', 'Val Loss'], loc='upper left')
+        # plt.plot(history.history['loss'])
+        # plt.plot(history.history['val_loss'])
+        # plt.title('Model loss')
+        # plt.ylabel('Loss')
+        # plt.xlabel('Epoch')
+        # plt.legend(['Train loss', 'Val Loss'], loc='upper left')
         # plt.show()
 
     def decode_sequence(self, input_seq):
