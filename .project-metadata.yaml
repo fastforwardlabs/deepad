@@ -24,7 +24,7 @@ tasks:
     entity_label: install_deps
     short_summary: Running install dependencies job.
     long_summary: >-
-      Running the job to install dependencies.
+      Running the job to install dependencies.  Note that this requires at least 2GB of memory
 
   - type: create_job
     name: Train Model

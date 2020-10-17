@@ -18,7 +18,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 
-plt = matplotlib.pyplot
+import matplotlib.pyplot as plt
 fig_size = (9, 6)
 fig_font = 15
 plot_params = {'legend.fontsize': 'large',

@@ -19,7 +19,6 @@ import logging
 
 import os
 from utils import train_utils
-import matplotlib.pyplot as plt
 
 import numpy as np
 import random
