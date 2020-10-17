@@ -1,16 +1,11 @@
 name: Deep Learning for Anomaly Detection
-description: Neural Question Answering
+description: Applying deep learning models on the task of anomaly detection
 author: Cloudera Engineer
 specification_version: 1.0
-prototype_version: 1.0
+prototype_version: 1.0 
 date: "2020-09-29"
-api_version: 1
+api_version: 1 
 
-environment_variables:
-  AWS_ACCESS_KEY:
-    default: "SUPER AWESOME AWS KEY"
-    description: "Access Key ID for accessing S3 bucket"
-    prompt_user: true
 
 tasks:
   - type: create_job
@@ -18,7 +13,7 @@ tasks:
     entity_label: install_deps
     script: install_deps.py
     arguments: None
-    short_summary: Job to install dependencies and download training data.
+    short_summary: Job to install project dependencies.
     environment:
       TASK_TYPE: CREATE/RUN_JOB
     kernel: python3
@@ -29,9 +24,25 @@ tasks:
     long_summary: >-
       Running the job to install dependencies.
 
+  - type: create_job
+    name: Train Model
+    entity_label: train_model
+    script: train.py
+    arguments: None
+    short_summary: Job to train and export model.
+    environment:
+      TASK_TYPE: CREATE/RUN_JOB
+    kernel: python3
+
+  - type: run_job
+    entity_label: train_model
+    short_summary: Running model training job.
+    long_summary: >-
+      Running the job to train a model.
+
   - type: start_application
-    name: Application to serve NeuralQA UI
-    subdomain: neuralqa
+    name: Application to serve Deep Learning for Anomaly Detectionn UI
+    subdomain: deepad
     script: app.py
     environment_variables:
       TASK_TYPE: START_APPLICATION
