@@ -22,27 +22,6 @@ import os
 logging.basicConfig(level=logging.INFO)
 
 
-# Point Flask to the front end directory
-root_file_path = os.path.dirname(os.path.abspath(__file__))
-root_file_path = root_file_path.replace("backend", "frontend")
-static_folder_root = os.path.join(root_file_path, "build")
-print(static_folder_root)
-
-app = Flask(__name__, static_url_path='',
-            static_folder=static_folder_root, template_folder=static_folder_root)
-
-
-# cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
-
-
-test_data_partition = "8020"
-in_train, out_train, scaler, col_names = data_utils.load_kdd(
-    data_path="data/kdd/", dataset_type="train", partition=test_data_partition)
-in_test, out_test, _, _ = data_utils.load_kdd(
-    data_path="data/kdd/", dataset_type="test", partition=test_data_partition, scaler=scaler)
-
-
 def load_autoencoder():
     ae_kwargs = {}
     ae_kwargs["latent_dim"] = 2
@@ -55,19 +34,38 @@ def load_autoencoder():
     return ae, metrics
 
 
-ae, metrics = load_autoencoder()
-
-
 def data_to_json(data, label):
     data = pd.DataFrame(data, columns=list(col_names))
     data["label"] = label
     return data
 
 
+# Point Flask to the front end directory
+
+root_file_path = os.getcwd() + "/app/frontend"
+print(root_file_path, os.getcwd())
+# root_file_path = root_file_path.replace("backend", "frontend")
+static_folder_root = os.path.join(root_file_path, "build")
+print(static_folder_root)
+
+app = Flask(__name__, static_url_path='',
+            static_folder=static_folder_root, template_folder=static_folder_root)
+
+# cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
+test_data_partition = "8020"
+in_train, out_train, scaler, col_names = data_utils.load_kdd(
+    data_path="data/kdd/", dataset_type="train", partition=test_data_partition)
+in_test, out_test, _, _ = data_utils.load_kdd(
+    data_path="data/kdd/", dataset_type="test", partition=test_data_partition, scaler=scaler)
+
+ae, metrics = load_autoencoder()
+
+
 @app.route('/')
 def hello():
     return render_template('index.html')
-
 
 # @app.route('/build')
 # def build():
