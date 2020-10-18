@@ -22,25 +22,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-parser = argparse.ArgumentParser(description='Process train parameters')
-parser.add_argument('--model', dest='model', type=str,
-                    choices=["ae", "vae", "seq2seq", "gan", "all"],
-                    help='model type to train', default="ae")
-# parser.add_argument('--epochs', dest='accumulate', action='store_const',
-#                     const=sum, default=max,
-#                     help='sum the integers (default: find the max)')
-
-
-args = parser.parse_args()
-
-
-test_data_partition = "8020"
-in_train, out_train, scaler, _ = data_utils.load_kdd(
-    data_path="data/kdd/", dataset_type="train", partition=test_data_partition)
-in_test, out_test, _, _ = data_utils.load_kdd(
-    data_path="data/kdd/", dataset_type="test", partition=test_data_partition, scaler=scaler)
-
-
 def train_pca():
     num_features = 2
     pca = PCAModel()
@@ -178,4 +159,21 @@ def train_all():
     train_seq2seq()
 
 
-train_autoencoder()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Process train parameters')
+    parser.add_argument('--model', dest='model', type=str,
+                        choices=["ae", "vae", "seq2seq", "gan", "all"],
+                        help='model type to train', default="ae")
+    # parser.add_argument('--epochs', dest='accumulate', action='store_const',
+    #                     const=sum, default=max,
+    #                     help='sum the integers (default: find the max)')
+
+    args = parser.parse_args()
+
+    test_data_partition = "8020"
+    in_train, out_train, scaler, _ = data_utils.load_kdd(
+        data_path="data/kdd/", dataset_type="train", partition=test_data_partition)
+    in_test, out_test, _, _ = data_utils.load_kdd(
+        data_path="data/kdd/", dataset_type="test", partition=test_data_partition, scaler=scaler)
+
+    train_autoencoder()
