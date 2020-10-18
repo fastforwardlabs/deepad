@@ -7,12 +7,13 @@
 # =============================================================================
 #
 
+import argparse
 from utils import data_utils
 from utils.eval_utils import load_metrics
 import numpy as np
 import pandas as pd
 from flask import Flask, jsonify, request, render_template
-from flask_cors import CORS, cross_origin
+# from flask_cors import CORS, cross_origin
 from models.ae import AutoencoderModel
 import logging
 import os
@@ -31,7 +32,7 @@ app = Flask(__name__, static_url_path='',
             static_folder=static_folder_root, template_folder=static_folder_root)
 
 
-cors = CORS(app)
+# cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 
@@ -92,7 +93,7 @@ def data():
 
 
 @app.route('/colnames')
-@cross_origin()
+# @cross_origin()
 def colnames():
     coldesc = [
         "Server Count",
@@ -127,7 +128,7 @@ def drop_cols(df, to_drop):
 
 
 @app.route('/predict', methods=['GET', 'POST'])
-@cross_origin()
+# @cross_origin()
 def predict():
     response = {}
     data, scores, predictions, ids = [], [], [], []
@@ -146,4 +147,10 @@ def predict():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    parser = argparse.ArgumentParser(description='Application parameters')
+    parser.add_argument('-p', '--port', dest='port', type=int,
+                        help='port to run model', default=os.environ.get("CDSW_READONLY_PORT"))
+
+    args, unknown = parser.parse_known_args()
+    port = args.port
+    app.run(port=port)

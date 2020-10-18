@@ -50,7 +50,7 @@ tasks:
     short_summary: Create an application to serve the Anomaly Detection UI.
     long_summary: Create an application to serve the Anomaly Detection UI.
     subdomain: deepad
-    script: app.py
+    script: app/backend/app.py
     environment_variables:
       TASK_TYPE: START_APPLICATION
     kernel: python3

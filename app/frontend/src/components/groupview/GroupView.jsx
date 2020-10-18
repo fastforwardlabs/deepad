@@ -37,7 +37,7 @@ class GroupView extends Component {
             tableHeight: "600px"
         }
 
-        this.baseUrl = "http://localhost:5000"
+        this.baseUrl = window.location.protocol + "//" + window.location.host;
         this.dataEndpoint = "/data"
         this.predictEndpoint = "/predict"
 
