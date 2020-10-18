@@ -54,11 +54,10 @@ This above script does the follow
 
 ## Summary of Results
 
-|                              |                          |                            |
 | :--------------------------: | :----------------------: | :------------------------: |
-|         AutoEncoder          | Variational AutoEncoder  |           BiGAN            |
-|   ![](metrics/ae/roc.png)    | ![](metrics/vae/roc.png) | ![](metrics/bigan/roc.png) |
-|           Seq2Seq            |           PCA            |           OCSVM            |
+| AutoEncoder | Variational AutoEncoder | BiGAN |
+| ![](metrics/ae/roc.png) | ![](metrics/vae/roc.png) | ![](metrics/bigan/roc.png) |
+| Seq2Seq | PCA | OCSVM |
 | ![](metrics/seq2seq/roc.png) | ![](metrics/pca/roc.png) | ![](metrics/ocsvm/roc.png) |
 
 For each model, we use labeled test data to first select a threshold that yields the best accuracy and then report on metrics such as f1, f2, precision, and recall at that threshold. We also report on ROC (area under the curve) to evaluate the overall skill of each model. Given that the dataset we use is not extremely complex (18 features), we see that most models perform relatively well. Deep models (BiGAN, AE) are more robust (precision, recall, ROC AUC), compared to PCA and OCSVM. The sequence-to-sequence model is not particularly competitive, given the data is not temporal. On a more complex dataset (e.g., images), we expect to see (similar to existing research), more pronounced advantages in using a deep learning model.

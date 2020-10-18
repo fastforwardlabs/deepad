@@ -25,7 +25,7 @@ logging.basicConfig(level=logging.INFO)
 parser = argparse.ArgumentParser(description='Process train parameters')
 parser.add_argument('--model', dest='model', type=str,
                     choices=["ae", "vae", "seq2seq", "gan", "all"],
-                    help='model type to train')
+                    help='model type to train', default="ae")
 # parser.add_argument('--epochs', dest='accumulate', action='store_const',
 #                     const=sum, default=max,
 #                     help='sum the integers (default: find the max)')

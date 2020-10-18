@@ -7,6 +7,7 @@
 # =============================================================================
 #
 
+import matplotlib.pyplot as plt
 from multiprocessing import Queue, Pool
 import json
 import os
@@ -16,8 +17,8 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, precision_score, recall_score, fbeta_score, roc_curve, auc, roc_auc_score
 import pandas as pd
 import matplotlib
+matplotlib.use('Agg')
 
-import matplotlib.pyplot as plt
 
 fig_size = (9, 6)
 fig_font = 15
