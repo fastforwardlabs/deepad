@@ -161,7 +161,7 @@ def train_all():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process train parameters')
-    parser.add_argument('--model', dest='model', type=str,
+    parser.add_argument('-m', '--model', dest='model', type=str,
                         choices=["ae", "vae", "seq2seq", "gan", "all"],
                         help='model type to train', default="ae")
     # parser.add_argument('--epochs', dest='accumulate', action='store_const',
