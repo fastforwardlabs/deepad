@@ -168,7 +168,7 @@ if __name__ == "__main__":
     #                     const=sum, default=max,
     #                     help='sum the integers (default: find the max)')
 
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
     test_data_partition = "8020"
     in_train, out_train, scaler, _ = data_utils.load_kdd(
