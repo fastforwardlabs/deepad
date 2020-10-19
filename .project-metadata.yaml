@@ -14,7 +14,7 @@ tasks:
     script: install_deps.py
     arguments: None 
     cpu: 1
-    memory: 2
+    memory: 3
     short_summary: Create job to install project dependencies.
     environment:
       TASK_TYPE: CREATE/RUN_JOB
@@ -34,7 +34,7 @@ tasks:
     short_summary: Job to train and export model.
     long_summary: Job to train and export model. Note that this requires at least 2GB of memory. 
     cpu: 1
-    memory: 2
+    memory: 3
     environment:
       TASK_TYPE: CREATE/RUN_JOB
     kernel: python3
