@@ -2,19 +2,18 @@ name: Deep Learning for Anomaly Detection
 description: Applying deep learning models on the task of anomaly detection
 author: Cloudera Engineer
 specification_version: 1.0
-prototype_version: 1.0 
+prototype_version: 1.0
 date: "2020-09-29"
-api_version: 1 
-
+api_version: 1
 
 tasks:
   - type: create_job
     name: Install dependencies
     entity_label: install_deps
     script: install_deps.py
-    arguments: None 
+    arguments: None
     cpu: 1
-    memory: 3
+    memory: 4
     short_summary: Create job to install project dependencies.
     environment:
       TASK_TYPE: CREATE/RUN_JOB
@@ -32,7 +31,7 @@ tasks:
     script: train.py
     arguments: None
     short_summary: Job to train and export model.
-    long_summary: Job to train and export model. Note that this requires at least 2GB of memory. 
+    long_summary: Job to train and export model. Note that this requires at least 2GB of memory.
     cpu: 1
     memory: 3
     environment:
