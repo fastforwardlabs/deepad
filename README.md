@@ -28,21 +28,16 @@ As an illustrative example, an autoencoder model is trained on normal samples wh
 ```bash
 ├── data
 │   ├── kdd
-│   │   ├── all.csv
-│   │   ├── train.csv
-│   │   ├── test.csv
+│   ├── kdd_data_gen.py
 ├── cml
 ├── metrics
 ├── models
-│   ├── ae
-│   ├── bigan
-│   ├── ocsvm
-│   ├── vae
 ├── utils
 ├── train.py
+├── test.py
 ```
 
-The `data` directory contains the dataset (kdd network intrusion) used the experiments. It contains a script (`data_gen.py`) that downloads the data and constructs train and test sets separated into inliers and outliers. The `models` directory contains code to specify the parameters of each model and methods for training as well as computing an anomaly score. `train.py` contains code to train each model and then evaluate each model (generate a histogram of anomaly scores assigned by each model, and ROC curve to assess model skill on the anomaly detection task).
+The `data` directory contains the dataset (kdd network intrusion) used the experiments. It contains a script (`kdd_data_gen.py`) that downloads the data, constructs train and test sets separated into inliers and outliers, and places those data files in the `data/kdd` directory. The `cml` folder contains scripts needed to launch the project on Cloudera Machine Learning (CML). The `models` directory contains code to specify the parameters of each model and methods for training and computing an anomaly score. `train.py` contains code to train each model and then evaluate each model (generate a histogram of anomaly scores assigned by each model, and ROC curve to assess model skill on the anomaly detection task).
 
 `python3 train.py`
 
@@ -89,16 +84,12 @@ sequence-to-sequence model (or architectures with _LSTM layers_) can model these
 
 <img src="app/frontend/public/screen.jpg" width="100%">
 
-For users interested in deploying this application on Cloudera Machine Learning, you can build this project and auto deploy with the `cml_build.py` script.
+For users interested in deploying this application on Cloudera Machine Learning, there are three ways to launch the project:
 
-```shell
-python3 cml_build.py
-```
-
-### How the CML Build Script Works
-
-- **Model Training** - this section of the script schedules a CML job which consists of a call to `train.py`. This in turn trains a model and saves the model to the `models/savedmodel` folder.
-- **Model Serving** - this section hosts a model prediction function as a RESTFUL model endpoint. Input to this endpoint is normalized intrusion detection data, and the output is a dictionary of scores and anomaly predictions for each instance in the input data.
-  
-- **Application Serving** - this section hosts a custom web application (shown above) which makes requests to the model endpoint and visualizes results. To run the web application standalone:
-  `python3 app/backend/app.py`
+1. **From Prototype Catalog** - Navigate to the Prototype Catalog on a CML workspace, select the "Deep Learning for Anomaly Detection" tile, click "Launch as Project", click "Configure Project"
+2. **As ML Prototype** - In a CML workspace, click "New Project", add a Project Name, select "ML Prototype" as the Initial Setup option, copy in the [repo URL](https://github.com/cloudera/CML_AMP_Anomaly_Detection), click "Create Project", click "Configure Project"
+3. **Manual Setup** - To begin, create a new project on CML (use the Git tab) and provide the [link](https://github.com/cloudera/CML_AMP_Anomaly_Detection) for this repository. This will clone the repository to your CML workbench session. Launch a Python3 Workbench Session with at least 4GB of memory and run the `cml_build.py` script which will create a CML Application and provide a link to the UI. The build script performs the following steps for you:
+   - *Model Training* - this section of the script schedules a CML job which consists of a call to `train.py`. This in turn trains a model and saves the model to the `models/savedmodel` folder.
+   - *Model Serving* - this section hosts a model prediction function as a RESTFUL model endpoint. Input to this endpoint is normalized intrusion detection data, and the output is a dictionary of scores and anomaly predictions for each instance in the input data.
+   - *Application Serving* - this section hosts a custom web application (shown above) which makes requests to the model endpoint and visualizes results. To run the web application standalone:
+     `python3 app/backend/app.py`
