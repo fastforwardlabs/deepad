@@ -80,59 +80,93 @@ start_job_params = {"environment": job_env_params}
 job_status = cml.start_job(new_job_id, start_job_params)
 print("Job started")
 
-# Create model build script
-cdsw_script = """#!/bin/bash
-pip3 install -r requirements.txt"""
+# # Create model build script
+# cdsw_script = """#!/bin/bash
+# pip3 install -r requirements.txt"""
 
-with open("cdsw-build.sh", 'w+') as f:
-    f.write(cdsw_script)
-    f.close()
-os.chmod("cdsw-build.sh", 0o777)
+# with open("cdsw-build.sh", 'w+') as f:
+#     f.write(cdsw_script)
+#     f.close()
+# os.chmod("cdsw-build.sh", 0o777)
 
-# Get Default Engine Details
-# Engine id is required for next step (create model)
+# # Get Default Engine Details
+# # Engine id is required for next step (create model)
 
-default_engine_details = cml.get_default_engine({})
-default_engine_image_id = default_engine_details["id"]
+# default_engine_details = cml.get_default_engine({})
+# default_engine_image_id = default_engine_details["id"]
 
-# Create Model
-example_model_input = np.random.rand(3, 18).tolist()
-example_model_output = {'scores': [
-    0.3811887163134269, 0.34900869152707426, 0.25317983491992346], 'predictions': [True, True, True]}
-create_model_params = {
-    "projectId": project_id,
-    "name": "Anomaly Detection " + run_time_suffix,
-    "description": "Predict if data is normal or abnormal",
-    "visibility": "private",
-    "targetFilePath": "cml_servemodel.py",
-    "targetFunctionName": "predict",
-    "engineImageId": default_engine_image_id,
-    "kernel": "python3",
-    "examples": [
-        {
-            "request": example_model_input,
-            "response": example_model_output
-        }],
-    "cpuMillicores": 1000,
-    "memoryMb": 2048,
-    "nvidiaGPUs": 0,
-    "replicationPolicy": {"type": "fixed", "numReplicas": 1},
-    "environment": {}}
+# # Create Model
+# example_model_input = np.random.rand(3, 18).tolist()
+# example_model_output = {'scores': [
+#     0.3811887163134269, 0.34900869152707426, 0.25317983491992346], 'predictions': [True, True, True]}
+# create_model_params = {
+#     "projectId": project_id,
+#     "name": "Anomaly Detection " + run_time_suffix,
+#     "description": "Predict if data is normal or abnormal",
+#     "visibility": "private",
+#     "targetFilePath": "cml_servemodel.py",
+#     "targetFunctionName": "predict",
+#     "engineImageId": default_engine_image_id,
+#     "kernel": "python3",
+#     "examples": [
+#         {
+#             "request": example_model_input,
+#             "response": example_model_output
+#         }],
+#     "cpuMillicores": 1000,
+#     "memoryMb": 2048,
+#     "nvidiaGPUs": 0,
+#     "replicationPolicy": {"type": "fixed", "numReplicas": 1},
+#     "environment": {}}
 
-new_model_details = cml.create_model(create_model_params)
-access_key = new_model_details["accessKey"]  # todo check for bad response
-print("New model created with access key", access_key)
+# new_model_details = cml.create_model(create_model_params)
+# access_key = new_model_details["accessKey"]  # todo check for bad response
+# print("New model created with access key", access_key)
 
 
-# Wait for the model to deploy.
+# # Wait for the model to deploy.
+# is_deployed = False
+# while is_deployed == False:
+#     model = cml.get_model({"id": str(
+#         new_model_details["id"]), "latestModelDeployment": True, "latestModelBuild": True})
+#     if model["latestModelDeployment"]["status"] == 'deployed':
+#         print("Model is deployed")
+#         break
+#     else:
+#         print("Model deployment status .....",
+#               model["latestModelDeployment"]["status"])
+#         time.sleep(10)
+
+# Create Application
+create_application_params = {
+    "name": "Application to serve Deep Learning for Anomaly Detectionn UI",
+    "subdomain": "deepad",
+    "description": "Create an application to serve the Anomaly Detection UI",
+    "type": "manual",
+    "script": "app/backend/app.py", 
+    "kernel": "python3", 
+    "cpu": 1, 
+    "memory": 2,
+    "nvidia_gpu": 0
+}
+
+new_application_details = cml.create_application(create_application_params)
+application_url = new_application_details["url"]
+application_id = new_application_details["id"]
+
+# print("Application may need a few minutes to finish deploying. Open link below in about a minute ..")
+print("Application created, deploying at ", application_url)
+
+# Wait for the application to deploy.
 is_deployed = False
 while is_deployed == False:
-    model = cml.get_model({"id": str(
-        new_model_details["id"]), "latestModelDeployment": True, "latestModelBuild": True})
-    if model["latestModelDeployment"]["status"] == 'deployed':
-        print("Model is deployed")
+    # Wait for the application to deploy.
+    app = cml.get_application(str(application_id), {})
+    if app["status"] == 'running':
+        print("Application is deployed")
         break
     else:
-        print("Model deployment status .....",
-              model["latestModelDeployment"]["status"])
+        print("Deploying Application.....")
         time.sleep(10)
+
+HTML("<a href='{}'>Open Application UI</a>".format(application_url))
