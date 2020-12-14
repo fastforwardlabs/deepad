@@ -1,15 +1,15 @@
 ## Deep Learning for Anomaly Detection
 
+This repo contains experimental code used to implement deep learning techniques for the task of anomaly detection and launches an interactive dashboard to visualize model results applied to a network intrusion use case. We include implementations of several neural networks (Autoencoder, Variational Autoencoder, Bidirectional GAN, Sequence Models) in Tensorflow 2.0 and two other baselines (One Class SVM, PCA). 
+
+For an in-depth review of the concepts presented here, please consult the Cloudera Fast Forward report [Deep Learning for Anomaly Detection](https://ff12.fastforwardlabs.com/). Additionally, two related prototypes are available for reference - [Blip](http://blip.fastforwardlabs.com/) & [Anomagram](https://anomagram.fastforwardlabs.com/#/)
+
 |                                    |                                |                                  |
 | :--------------------------------: | :----------------------------: | :------------------------------: |
 |            AutoEncoder             |    Variational AutoEncoder     |              BiGAN               |
 |   ![](metrics/ae/histogram.png)    | ![](metrics/vae/histogram.png) | ![](metrics/bigan/histogram.png) |
 |              Seq2Seq               |              PCA               |              OCSVM               |
 | ![](metrics/seq2seq/histogram.png) | ![](metrics/pca/histogram.png) | ![](metrics/ocsvm/histogram.png) |
-
-> This repo contains code for experiments we have run at Cloudera Fast Forward for implementing deep learning for anomaly detection use cases.
-
-We include implementations of several neural networks (Autoencoder, Variational Autoencoder, Bidirectional GAN, Sequence Models) in Tensorflow 2.0 and two other baselines (One Class SVM, PCA). We have released a report detailing the technical details for each approach in our online report [here](https://ff12.fastforwardlabs.com/). An interactive visualization of some results can be found [here](http://blip.fastforwardlabs.com/).
 
 Anomalies - often referred to as outliers, abnormalities, rare events, or deviants - are data points or patterns in data that do _not_ conform to a notion of normal behavior. Anomaly detection, then, is the task of finding those patterns in data that do not adhere to expected norms, given previous observations. The capability to recognize or detect anomalous behavior can provide highly useful insights across industries. Flagging unusual cases or enacting a planned response when they occur can save businesses time, costs, and customers. Hence, anomaly detection has found diverse applications in a variety of domains, including IT analytics, network intrusion analytics, medical diagnostics, financial fraud protection, manufacturing quality control, marketing and social media analytics, and more.
 
@@ -30,20 +30,46 @@ As an illustrative example, an autoencoder model is trained on normal samples wh
 │   ├── kdd
 │   ├── kdd_data_gen.py
 ├── cml
+│   ├── cml_build.py
+│   ├── cml_servemodel.py
+│   ├── install_deps.py
 ├── metrics
 ├── models
+│   ├── ae.py
+│   ├── bigan.py
+│   ├── ocsvm.py
+│   ├── pca.py
+│   ├── seq2seq.py
+│   ├── vae.py
 ├── utils
+│   ├── data_utils.py
+│   ├── eval_utils.py
+│   ├── train_utils.py
 ├── train.py
 ├── test.py
 ```
 
-The `data` directory contains the dataset (kdd network intrusion) used the experiments. It contains a script (`kdd_data_gen.py`) that downloads the data, constructs train and test sets separated into inliers and outliers, and places those data files in the `data/kdd` directory. The `cml` folder contains scripts needed to launch the project on Cloudera Machine Learning (CML). The `models` directory contains code to specify the parameters of each model and methods for training and computing an anomaly score. `train.py` contains code to train each model and then evaluate each model (generate a histogram of anomaly scores assigned by each model, and ROC curve to assess model skill on the anomaly detection task).
+#### `data`
 
-`python3 train.py`
+The `data` directory holds the [KDD Network Intrusion dataset](http://kdd.ics.uci.edu/databases/kddcup99/kddcup99.html) used the experiments and interactive dashboard. It contains a script (`kdd_data_gen.py`) that downloads the data, constructs train and test sets separated into inliers and outliers, and places those data files in the `data/kdd` directory. 
 
-This above script does the following:
+#### `cml`
 
-- Downloads the kdd dataset if not already downloaded
+The `cml` folder contains the artifacts needed to configure and launch the project on Cloudera Machine Learning (CML). 
+
+#### `models`
+
+The `models` directory contains modules for each of the model implementations. Each module comes with code to specify parameters and methods for training and computing an anomaly score. It also serves as the holding location of saved models after training.
+
+#### `utils`
+
+The `utils` directory holds helper functions that are referenced throughout different modules and scripts in the repo.
+
+#### `train.py`
+
+This script contains code to train and then evaluate each model by generating a histogram of anomaly scores assigned by each model, and ROC curve to assess model skill on the anomaly detection task. The general steps taken in the script are:
+
+- Download the KDD dataset if not already downloaded
 - Trains all of the models (Autoencoder, Variational Autoencoder, Bidirectional GAN, Sequence Models, PCA, OCSVM)
 - Evaluates the models on a test split (8000 inliers, 2000 outliers). Generates [charts](metrics) on model performance: histogram of anomaly scores, ROC, general metrics (f1,f2, precision, recall, accuracy)
 
@@ -88,8 +114,11 @@ For users interested in deploying this application on Cloudera Machine Learning,
 
 1. **From Prototype Catalog** - Navigate to the Prototype Catalog on a CML workspace, select the "Deep Learning for Anomaly Detection" tile, click "Launch as Project", click "Configure Project"
 2. **As ML Prototype** - In a CML workspace, click "New Project", add a Project Name, select "ML Prototype" as the Initial Setup option, copy in the [repo URL](https://github.com/cloudera/CML_AMP_Anomaly_Detection), click "Create Project", click "Configure Project"
-3. **Manual Setup** - In a CML workspace, click "New Project", add a Project Name, select "Git" as the Initial Setup option. Launch a Python3 Workbench Session with at least 4GB of memory and run the `cml/cml_build.py` script which will create a CML Application and provide a link to the UI. The build script performs the following steps for you:
-   - _Model Training_ - this section of the script schedules a CML job which consists of a call to `train.py`. This in turn trains a model and saves the model to the `models/savedmodel` folder.
-   - _Model Serving_ - this section hosts a model prediction function as a RESTFUL model endpoint. Input to this endpoint is normalized intrusion detection data, and the output is a dictionary of scores and anomaly predictions for each instance in the input data.
-   - _Application Serving_ - this section hosts a custom web application (shown above) which makes requests to the model endpoint and visualizes results. To run the web application standalone:
-     `python3 app/backend/app.py`
+3. **Manual Setup** - In a CML workspace, click "New Project", add a Project Name, select "Git" as the Initial Setup option. Launch a Python3 Workbench Session with at least 4GB of memory and run the `cml/cml_build.py` script which will create a CML Application and provide a link to the UI. 
+
+Regardless of the launch method, the following steps are performed for you:
+
+- *Install Dependencies* - All necessary package dependencies are installed into the new project.
+
+- _Model Training_ - A CML job is executed which consists of a call to `train.py`. This in turn trains a model and saves the model to the `models/savedmodel` folder.
+- _Application Serving_ - A custom web application (shown above) makes requests to the model and visualizes results. To run the web application standalone run `python3 app/backend/app.py`
