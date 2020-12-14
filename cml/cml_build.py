@@ -79,7 +79,7 @@ job_env_params = {}
 start_job_params = {"environment": job_env_params}
 job_status = cml.start_job(new_job_id, start_job_params)
 print("Job started")
-sleep(120)
+time.sleep(120)
 
 # # Create model build script
 # cdsw_script = """#!/bin/bash
