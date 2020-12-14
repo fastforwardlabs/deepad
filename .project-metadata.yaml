@@ -10,7 +10,7 @@ tasks:
   - type: create_job
     name: Install dependencies
     entity_label: install_deps
-    script: install_deps.py
+    script: cml/install_deps.py
     arguments: None
     cpu: 1
     memory: 4
