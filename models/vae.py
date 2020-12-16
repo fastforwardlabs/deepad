@@ -1,4 +1,4 @@
-# ****************************************************************************
+# ###########################################################################
 #
 #  CLOUDERA APPLIED MACHINE LEARNING PROTOTYPE (AMP)
 #  (C) Cloudera, Inc. 2020
@@ -36,7 +36,7 @@
 #  BUSINESS ADVANTAGE OR UNAVAILABILITY, OR LOSS OR CORRUPTION OF
 #  DATA.
 #
-# ***************************************************************************
+# ###########################################################################
 
 import tensorflow
 from tensorflow.keras.layers import Lambda, Input, Dense
