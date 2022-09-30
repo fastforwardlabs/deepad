@@ -9,7 +9,7 @@
         "carbon-components": "^10.10.2",
         "carbon-components-react": "^7.10.2",
         "carbon-icons": "^7.0.7",
-        "d3": "^5.15.0",
+        "d3": "^7.6.1",
         "history": "^4.10.1",
         "node-sass": "^4.13.1",
         "react": "^16.13.0",
